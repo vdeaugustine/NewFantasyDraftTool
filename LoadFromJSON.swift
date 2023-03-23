@@ -31,7 +31,16 @@ extension Int64 {
 
 
 
-func loadData(from jsonFile: String, projectionType: ProjectionType, context: NSManagedObjectContext) {
+/// Loads batter stats from a JSON file for the given projection type and position into the specified managed object context.
+///
+/// - Parameters:
+/// - projectionType: The projection type for the stats to load.
+/// - position: The position for the stats to load.
+/// - context: The managed object context to load the stats into.
+func loadBatters(projectionType: ProjectionType, position: Position, context: NSManagedObjectContext) {
+    
+    let jsonFile = projectionType.extendedFileName(position: position)
+    
     // Load the JSON data from the file
     guard let url = Bundle.main.url(forResource: jsonFile, withExtension: "json"),
           let data = try? Data(contentsOf: url) else {

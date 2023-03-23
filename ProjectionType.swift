@@ -9,14 +9,6 @@ import Foundation
 
 // MARK: - ProjectionTypes
 
-// enum ProjectionType: String, CaseIterable {
-//    case ATC
-//    case Steamer
-//    case theBat
-//    case theBatx
-//    case depthCharts
-//    case zips
-// }
 
 enum ProjectionType: String, CaseIterable, Codable {
     case steamer, zips, thebat, thebatx, atc, depthCharts, myProjections
