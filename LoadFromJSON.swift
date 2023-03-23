@@ -9,12 +9,26 @@ import Foundation
 import CoreData
 
 extension Int64 {
+    
+    /// Creates a new `Int64` instance from an optional `String`.
+    ///
+    /// If the string can be parsed as an integer, the initializer returns a new `Int64` instance
+    /// containing the parsed value. If the string is `nil`, the initializer returns `nil`.
+    ///
+    /// - Parameter string: The string to parse as an integer.
+    ///
+    /// - Returns: A new `Int64` instance containing the parsed value of `string`, or `nil` if
+    ///   `string` could not be parsed as an integer.
+    ///
+    /// - Note: This initializer uses the `init?(_ text: String, radix: Int = default)` initializer
+    ///   provided by `Int64` to parse the string as an integer. If the string cannot be parsed as an
+    ///   integer, the initializer returns `nil`.
     init?(_ string: String?) {
         guard let string = string else { return nil }
-        guard let value = Int64(string) else { return nil }
-        self = value
+        self.init(string, radix: 10)
     }
 }
+
 
 
 func loadData(from jsonFile: String, projectionType: ProjectionType, context: NSManagedObjectContext) {
@@ -51,10 +65,9 @@ func loadData(from jsonFile: String, projectionType: ProjectionType, context: NS
                 // Create a new PlayerEntity
                 player = PlayerEntity(context: context)
                 player.id = playerId
-                player.name = playerData["Name"] as? String ?? ""
-                player.position = playerData["position"] as? String ?? ""
-                player.team = playerData["Team"] as? String ?? ""
-                player.shortName = playerData["ShortName"] as? String ?? ""
+                player.name = playerData["PlayerName"] as? String ?? ""
+                player.teamShort = playerData["Team"] as? String ?? ""
+                player.teamFull = playerData["ShortName"] as? String ?? ""
                 print("Player NOT already existed. New player now: ", player.id)
             }
         } catch {
@@ -83,6 +96,33 @@ func loadData(from jsonFile: String, projectionType: ProjectionType, context: NS
         stats.gdp = playerData["GDP"] as? Int64 ?? 0
         stats.sb = playerData["SB"] as? Int64 ?? 0
         stats.cs = playerData["CS"] as? Int64 ?? 0
+        stats.avg = playerData["AVG"] as? Double ?? 0
+        stats.obp = playerData["OBP"] as? Double ?? 0
+        stats.slg = playerData["SLG"] as? Double ?? 0
+        stats.ops = playerData["OPS"] as? Double ?? 0
+        stats.wOBA = playerData["wOBA"] as? Double ?? 0
+        stats.bbPercentage = playerData["BB%"] as? Double ?? 0
+        stats.kPercentage = playerData["K%"] as? Double ?? 0
+        stats.bbPerK = playerData["BB/K"] as? Double ?? 0
+        stats.iso = playerData["ISO"] as? Double ?? 0
+        stats.spd = playerData["Spd"] as? Double ?? 0
+        stats.babip = playerData["BABIP"] as? Double ?? 0
+        stats.ubr = playerData["UBR"] as? Double ?? 0
+        stats.gdpRuns = playerData["GDPRuns"] as? Double ?? 0
+        stats.wRC = playerData["wRC"] as? Double ?? 0
+        stats.wRAA = playerData["wRAA"] as? Double ?? 0
+        stats.uzr = playerData["UZR"] as? Double ?? 0
+        stats.wBsR = playerData["wBsR"] as? Double ?? 0
+        stats.baseRunning = playerData["BaseRunning"] as? Double ?? 0
+        stats.war = playerData["WAR"] as? Double ?? 0
+        stats.offense = playerData["Off"] as? Double ?? 0
+        stats.def = playerData["Def"] as? Double ?? 0
+        stats.wRCPlus = playerData["wRC+"] as? Double ?? 0
+        stats.adp = playerData["ADP"] as? Double ?? 0
+        
+        stats.minpos = playerData["minpos"] as? String ?? ""
+        stats.teamid = playerData["teamid"] as? Int64 ?? 0
+        stats.League = playerData["League"] as? String ?? ""
         stats.projectionType = projectionType.rawValue
         
         // Add the stats to the player

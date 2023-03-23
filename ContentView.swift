@@ -17,6 +17,8 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \PlayerEntity.name, ascending: true)],
         animation: .default)
     private var players: FetchedResults<PlayerEntity>
+    
+    
 
     var body: some View {
         NavigationView {
@@ -26,7 +28,7 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text(player.name ?? "")
                                 .font(.headline)
-                            Text(player.team ?? "")
+                            Text(player.teamFull ?? "")
                                 .font(.subheadline)
                         }
                     }
@@ -44,28 +46,38 @@ struct ContentView: View {
 
 struct PlayerDetailView: View {
     @ObservedObject var player: PlayerEntity
+    @State private var projectionType: ProjectionType = .atc
+    
     
     var body: some View {
-        List {
-            Section(header: Text("Player Information")) {
-                Text("Name: \(player.name ?? "")")
-                Text("Team: \(player.team ?? "")")
-                Text("Short Name: \(player.shortName ?? "")")
-                Text("Position: \(player.position ?? "")")
+        VStack {
+            Picker("Projection Type", selection: $projectionType) {
+                ForEach(ProjectionType.allCases, id: \.self) { projType in
+                    Text(projType.rawValue)
+                        .tag(projType.rawValue)
+                }
             }
-            Section(header: Text("Player Stats")) {
-                ForEach(player.statsArray, id: \.self) { stats in
-                    VStack(alignment: .leading) {
-                        Text("Projection Type: \(stats.projectionType ?? "")")
-                        Text("Games: \(stats.g)")
-                        Text("At Bats: \(stats.ab)")
-                        // Add other stats as desired
+            List {
+                Section(header: Text("Player Information")) {
+                    Text("Name: \(player.name ?? "")")
+                    Text("Team: \(player.teamFull ?? "")")
+                    Text("Short Name: \(player.teamShort ?? "")")
+                    Text("Position: \(player.statsArray.first?.minpos ?? "")")
+                }
+                Section(header: Text("Player Stats")) {
+                    ForEach(player.statsArray, id: \.self) { stats in
+                        VStack(alignment: .leading) {
+                            Text("Projection Type: \(stats.projectionType ?? "")")
+                            Text("Games: \(stats.g)")
+                            Text("At Bats: \(stats.ab)")
+                            // Add other stats as desired
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
             }
         }
-        .navigationTitle(player.name ?? "")
+        .navigationTitle([projectionType.rawValue, player.name ?? ""].joined(separator: " "))
         .listStyle(GroupedListStyle())
     }
 }
@@ -76,6 +88,10 @@ extension PlayerEntity {
         return set.sorted {
             $0.projectionType ?? "" < $1.projectionType ?? ""
         }
+    }
+    
+    func stats(for projectionType: ProjectionType) -> PlayerStatsEntity? {
+        self.statsArray.first(where: { $0.projectionType == projectionType.rawValue })
     }
 }
 

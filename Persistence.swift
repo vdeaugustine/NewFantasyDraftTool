@@ -15,7 +15,8 @@ struct PersistenceController {
         let context = result.container.viewContext
         
         // Load the sample data
-        loadData(from: "Extended1bBatSteamerStandard", projectionType: .ATC, context: context)
+        loadData(from: ProjectionType.steamer.extendedFileName(position: .first), projectionType: .steamer, context: context)
+        loadData(from: ProjectionType.atc.extendedFileName(position: .first), projectionType: .atc, context: context)
         
         return result
     }()
