@@ -19,53 +19,31 @@ struct ContentView: View {
                                     NSSortDescriptor(keyPath: \PlayerEntity.name, ascending: true)],
                   animation: .default)
     private var players: FetchedResults<PlayerEntity>
-    
+
     let positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "P"]
-    
+
     @State private var currentIndex = 0
 
     var body: some View {
         NavigationView {
-            ZStack(alignment: .trailing) {
-                List {
-                    ForEach(players) { player in
-                        NavigationLink(destination: PlayerDetailView(player: player)) {
-                            VStack(alignment: .leading) {
-                                Text(player.name ?? "")
-                                    .font(.headline)
-                                Text(player.teamFull ?? "")
-                                    .font(.subheadline)
-                            }
+            List {
+                ForEach(players) { player in
+                    NavigationLink(destination: PlayerDetailView(player: player)) {
+                        VStack(alignment: .leading) {
+                            Text(player.name ?? "")
+                                .font(.headline)
+                            Text(player.teamFull ?? "")
+                                .font(.subheadline)
                         }
                     }
                 }
-                .listStyle(PlainListStyle())
-                VStack {
-                    ForEach(positions, id: \.self) { position in
-                        Button(action: {
-                            self.currentIndex = positions.firstIndex(of: position) ?? 0
-                        }) {
-                            Text(position)
-                                .foregroundColor(currentIndex == positions.firstIndex(of: position) ? .accentColor : .primary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 2)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .padding(.top, 6)
-                .padding(.trailing, 10)
             }
+
             .navigationTitle("Players")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                UITableView.appearance().separatorStyle = .none
-            }
         }
     }
 }
-
-
 
 // MARK: - PlayerDetailView
 

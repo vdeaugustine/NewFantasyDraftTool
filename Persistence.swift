@@ -11,14 +11,20 @@ struct PersistenceController {
     static let shared = PersistenceController()
 
     static var preview: PersistenceController = {
-        let result = PersistenceController(inMemory: true)
+        let result = PersistenceController(inMemory: false)
         let context = result.container.viewContext
 
         for position in Position.batters {
             for projection in ProjectionType.batterArr {
-                loadBatters(projectionType: projection, position: position, context: context)
+                loadBatters(projectionType: projection, position: position, container: result.container)
+//                loadBatters(projectionType: projection, position: position, container: context)
+//                loadBatters(projectionType: projection, position: position, container: context)
             }
         }
+        
+        ScoringSettings.createDefaultScoringSettings(context: context)
+        
+        
 
         return result
     }()

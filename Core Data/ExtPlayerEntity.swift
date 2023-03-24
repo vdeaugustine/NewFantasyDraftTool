@@ -5,6 +5,7 @@
 //  Created by Vincent DeAugustine on 3/23/23.
 //
 
+import CoreData
 import Foundation
 
 extension PlayerEntity {
@@ -178,7 +179,6 @@ extension PlayerEntity {
         }
     }
 
-    
     /// Converts a given stat name and projection type into a string representation of the corresponding value. If the value is a Double, it will be returned as a string with two decimal places. If the value is an Int, it will be returned as a string.
     /// - Parameters:
     /// - statName: The name of the stat to retrieve the value for.
@@ -192,9 +192,7 @@ extension PlayerEntity {
         }
         return nil
     }
-    
-    
-    
+
     /// Returns an array of available ProjectionTypes based on the statsArray.
     /// The function first maps the projectionType property of all PlayerStatsEntity objects in statsArray
     /// into an array of String values. It then removes any empty strings and maps the remaining strings
@@ -205,6 +203,98 @@ extension PlayerEntity {
         let projectionTypeStrings = statsArray.map { $0.projectionType ?? "" }
         return projectionTypeStrings.compactMap { ProjectionType(rawValue: $0) }
     }
-    
-    
+
+    /// Calculates the fantasy points for the player based on the given scoring settings and projection type.
+    /// - Parameters:
+    /// - scoringSettings: The ScoringSettings object to use for calculating the fantasy points.
+    /// - projectionType: The projection type to use for calculating the fantasy points.
+    /// - Returns: The calculated fantasy points as a Double, or nil if the player stats for the given projection type cannot be found.
+    func fantasyPoints(scoringSettings: ScoringSettings, projectionType: ProjectionType) -> Double? {
+        guard let playerStats = statsArray.first(where: { $0.projectionType == projectionType.rawValue }) else {
+            return nil
+        }
+        let runsPoints = Double(playerStats.r) * scoringSettings.r
+        let rbiPoints = Double(playerStats.rbi) * scoringSettings.rbi
+        let totalBasesPoints = Double(playerStats.tb) * scoringSettings.tb
+        let stolenBasesPoints = Double(playerStats.sb) * scoringSettings.sb
+        let walksPoints = Double(playerStats.bb) * scoringSettings.bb
+        let caughtStealingPoints = Double(playerStats.cs) * scoringSettings.cs
+        let strikeoutsPoints = Double(playerStats.so) * scoringSettings.batterK
+
+        let fantasyPoints = runsPoints + rbiPoints + totalBasesPoints + stolenBasesPoints + walksPoints + caughtStealingPoints + strikeoutsPoints
+
+        return fantasyPoints
+    }
+
+    // Check if the context has a PlayerStatsEntity object that has the given projection type
+    // Get the player from the PlayerStatsEntity object
+    // Check if there is a ScoringSettings object with the name "DefaultPoints" in the context
+    func calculateDefaultPointsIfNeeded(projectionType: ProjectionType, mainContext: NSManagedObjectContext) {
+            
+            // Get the PlayerStatsEntity
+            guard let playerStats = statsArray.first(where: { $0.projectionType == projectionType.rawValue }),
+                  let player = playerStats.player,
+                  let scoringSettings = ScoringSettings.fetchDefaultPointsScoringSettings(in: mainContext) else {
+                return
+            }
+            
+            // Check if there is already a CalculatedPoints object with the name "DefaultPoints" for this playerStatsEntity
+            guard playerStats.calculatedPoints?.first(where: { ($0 as? CalculatedPoints)?.scoringName == "DefaultPoints" }) == nil else {
+                return
+            }
+            
+            // Calculate the fantasy points for this player using the "DefaultPoints" ScoringSettings object
+            let fantasyPoints = player.fantasyPoints(scoringSettings: scoringSettings, projectionType: projectionType) ?? 0.0
+            
+            // Create a new CalculatedPoints object with the calculated points
+            let calculatedPoints = CalculatedPoints(context: mainContext)
+            calculatedPoints.amount = fantasyPoints
+            calculatedPoints.scoringName = "DefaultPoints"
+            calculatedPoints.playerStats = playerStats
+            
+            // Save the calculated points to the main context
+            do {
+                try mainContext.save()
+            } catch {
+                print("Error saving calculated points: \(error.localizedDescription)")
+            }
+        }
+
+
+
+    /// Calculates and returns the total fantasy points for a player for a given projection type.
+    ///
+    /// The function calculates the fantasy points based on a given set of scoring settings for the points, and returns the calculated points. The calculated points are determined based on the player's statistics for a given projection type. If no calculated points entity exists for a given projection type, the function calls the calculateDefaultPointsIfNeeded function to create it.
+    ///
+    /// - Parameters:
+    /// - projectionType: The projection type for which the function will calculate fantasy points.
+    /// - context: The managed object context to be used to retrieve the player's statistics and save the calculated points.
+    ///
+    /// - Returns: An optional Double value representing the total fantasy points for the player for the given projection type, or nil if no statistics exist for the player.
+    func calculatedPoints(for projectionType: ProjectionType, in context: NSManagedObjectContext) -> Double? {
+            guard let playerStats = stats?.allObjects as? [PlayerStatsEntity] else {
+                return nil
+            }
+
+            // Find the matching PlayerStatsEntity with the given projectionType
+            if let matchingStats = playerStats.first(where: { $0.projectionType == projectionType.rawValue }) {
+                if let calculatedPointsSet = matchingStats.calculatedPoints,
+                   let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
+                   let calculatedPoints = calculatedPointsArray.first {
+                    // If there's already a CalculatedPoints entity, return its amount
+                    return calculatedPoints.amount
+                } else {
+                    // If no CalculatedPoints entity exists, call the calculateDefaultPointsIfNeeded function
+                    calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: context)
+                    // Now, the CalculatedPoints should be created, return its amount
+                    if let calculatedPointsSet = matchingStats.calculatedPoints,
+                       let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
+                       let calculatedPoints = calculatedPointsArray.first {
+                        return calculatedPoints.amount
+                    }
+                }
+            }
+
+            return nil
+        }
 }

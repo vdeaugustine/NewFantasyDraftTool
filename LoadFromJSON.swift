@@ -5,11 +5,10 @@
 //  Created by Vincent DeAugustine on 3/23/23.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 extension Int64 {
-    
     /// Creates a new `Int64` instance from an optional `String`.
     ///
     /// If the string can be parsed as an integer, the initializer returns a new `Int64` instance
@@ -29,47 +28,43 @@ extension Int64 {
     }
 }
 
-
-
 /// Loads batter stats from a JSON file for the given projection type and position into the specified managed object context.
 ///
 /// - Parameters:
 /// - projectionType: The projection type for the stats to load.
 /// - position: The position for the stats to load.
 /// - context: The managed object context to load the stats into.
-func loadBatters(projectionType: ProjectionType, position: Position, context: NSManagedObjectContext) {
-    
+func loadBatters(projectionType: ProjectionType, position: Position, container: NSPersistentContainer) {
+    let context = container.viewContext
     let jsonFile = projectionType.extendedFileName(position: position)
-    
+
     // Load the JSON data from the file
     guard let url = Bundle.main.url(forResource: jsonFile, withExtension: "json"),
           let data = try? Data(contentsOf: url) else {
         print("Error loading JSON file")
         return
     }
-    
+
     // Decode the JSON data into an array of dictionaries
     guard let decodedData = try? JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
         print("Error decoding JSON data")
         return
     }
-    
+
     // Process each dictionary in the decoded data
     for playerData in decodedData {
         guard let playerId = Int64(playerData["playerids"] as? String) else { continue }
-//        print("Player ID:", playerId)
         // Check if a PlayerEntity with the same playerId already exists
         let fetchRequest: NSFetchRequest<PlayerEntity> = PlayerEntity.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %d", playerId)
         fetchRequest.fetchLimit = 1
-        
+
         var player: PlayerEntity!
-        
+
         do {
             let fetchedPlayers = try context.fetch(fetchRequest)
             if let existingPlayer = fetchedPlayers.first {
                 player = existingPlayer
-//                print("Player already existed: ", player.id)
             } else {
                 // Create a new PlayerEntity
                 player = PlayerEntity(context: context)
@@ -83,7 +78,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
             print("Error fetching player: \(error)")
             continue
         }
-        
+
         // Create a new PlayerStatsEntity
         let stats = PlayerStatsEntity(context: context)
         stats.g = playerData["G"] as? Int64 ?? 0
@@ -132,9 +127,17 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
         stats.teamid = playerData["teamid"] as? Int64 ?? 0
         stats.League = playerData["League"] as? String ?? ""
         stats.projectionType = projectionType.rawValue
-        
+
+        let singles = stats.h - stats.twoB - stats.threeB - stats.hr
+        let tb = singles + (stats.twoB * 2) + (stats.threeB * 3) + (stats.hr * 4)
+        stats.tb = tb
+
         // Add the stats to the player
         player.addToStats(stats)
+
+        // Calculate default points for the player
+        player.calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: container.viewContext)
+
         var oldPos = player.position
         if oldPos != nil {
             oldPos?.appendIfNotContains(stats.minpos, separator: ", ")
@@ -142,23 +145,21 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
             oldPos = stats.minpos
         }
         player.position = oldPos
-        
     }
-    
+
     // Save the context
     do {
-        try context.save()
+        try container.viewContext.save()
     } catch {
         print("Error saving context: \(error)")
     }
-    
 }
 
 extension String {
     mutating func appendIfNotContains(_ string: String?, separator: String = ",") {
         guard let string = string else { return }
-        if !self.contains(string) {
-            if self.isEmpty {
+        if !contains(string) {
+            if isEmpty {
                 self = string
             } else {
                 self += "\(separator)\(string)"
@@ -166,4 +167,3 @@ extension String {
         }
     }
 }
-
