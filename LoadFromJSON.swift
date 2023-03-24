@@ -57,7 +57,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
     // Process each dictionary in the decoded data
     for playerData in decodedData {
         guard let playerId = Int64(playerData["playerids"] as? String) else { continue }
-        print("Player ID:", playerId)
+//        print("Player ID:", playerId)
         // Check if a PlayerEntity with the same playerId already exists
         let fetchRequest: NSFetchRequest<PlayerEntity> = PlayerEntity.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %d", playerId)
@@ -69,7 +69,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
             let fetchedPlayers = try context.fetch(fetchRequest)
             if let existingPlayer = fetchedPlayers.first {
                 player = existingPlayer
-                print("Player already existed: ", player.id)
+//                print("Player already existed: ", player.id)
             } else {
                 // Create a new PlayerEntity
                 player = PlayerEntity(context: context)
@@ -128,7 +128,6 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
         stats.def = playerData["Def"] as? Double ?? 0
         stats.wRCPlus = playerData["wRC+"] as? Double ?? 0
         stats.adp = playerData["ADP"] as? Double ?? 0
-        
         stats.minpos = playerData["minpos"] as? String ?? ""
         stats.teamid = playerData["teamid"] as? Int64 ?? 0
         stats.League = playerData["League"] as? String ?? ""
@@ -136,6 +135,14 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
         
         // Add the stats to the player
         player.addToStats(stats)
+        var oldPos = player.position
+        if oldPos != nil {
+            oldPos?.appendIfNotContains(stats.minpos, separator: ", ")
+        } else {
+            oldPos = stats.minpos
+        }
+        player.position = oldPos
+        
     }
     
     // Save the context
@@ -146,3 +153,17 @@ func loadBatters(projectionType: ProjectionType, position: Position, context: NS
     }
     
 }
+
+extension String {
+    mutating func appendIfNotContains(_ string: String?, separator: String = ",") {
+        guard let string = string else { return }
+        if !self.contains(string) {
+            if self.isEmpty {
+                self = string
+            } else {
+                self += "\(separator)\(string)"
+            }
+        }
+    }
+}
+

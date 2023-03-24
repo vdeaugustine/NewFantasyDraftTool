@@ -15,46 +15,56 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(entity: PlayerEntity.entity(),
-                  sortDescriptors: [NSSortDescriptor(keyPath: \PlayerEntity.name, ascending: true)],
+                  sortDescriptors: [NSSortDescriptor(keyPath: \PlayerEntity.position, ascending: true),
+                                    NSSortDescriptor(keyPath: \PlayerEntity.name, ascending: true)],
                   animation: .default)
-    private var playersFetched: FetchedResults<PlayerEntity>
+    private var players: FetchedResults<PlayerEntity>
     
-    private var playersFiltered: [PlayerEntity] {
-        if searchText.isEmpty {
-                    return Array(playersFetched)
-                } else {
-                    return playersFetched.filter { $0.name?.lowercased().contains(searchText.lowercased()) ?? false }
-                }
-    }
+    let positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "P"]
     
-    @State private var searchText = ""
+    @State private var currentIndex = 0
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(playersFiltered, id: \.self) { player in
-                    NavigationLink(destination: PlayerDetailView(player: player)) {
-                        VStack(alignment: .leading) {
-                            Text(player.name ?? "")
-                                .font(.headline)
-                            Text(player.teamFull ?? "")
-                                .font(.subheadline)
+            ZStack(alignment: .trailing) {
+                List {
+                    ForEach(players) { player in
+                        NavigationLink(destination: PlayerDetailView(player: player)) {
+                            VStack(alignment: .leading) {
+                                Text(player.name ?? "")
+                                    .font(.headline)
+                                Text(player.teamFull ?? "")
+                                    .font(.subheadline)
+                            }
                         }
                     }
                 }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                .listStyle(PlainListStyle())
+                VStack {
+                    ForEach(positions, id: \.self) { position in
+                        Button(action: {
+                            self.currentIndex = positions.firstIndex(of: position) ?? 0
+                        }) {
+                            Text(position)
+                                .foregroundColor(currentIndex == positions.firstIndex(of: position) ? .accentColor : .primary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 2)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.top, 6)
+                .padding(.trailing, 10)
             }
-            .searchable(text: $searchText) {
-                Text("Search")
+            .navigationTitle("Players")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                UITableView.appearance().separatorStyle = .none
             }
-            Text("Select a player")
         }
     }
 }
+
 
 
 // MARK: - PlayerDetailView
@@ -77,7 +87,7 @@ struct PlayerDetailView: View {
                     Text("Name: \(player.name ?? "")")
                     Text("Team: \(player.teamFull ?? "")")
                     Text("Short Name: \(player.teamShort ?? "")")
-                    Text("Position: \(player.statsArray.first?.minpos ?? "")")
+                    Text("Position: \(player.position ?? "")")
                 }
 
                 Section(header: Text("Player Stats")) {
