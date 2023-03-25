@@ -8,10 +8,6 @@
 import CoreData
 import Foundation
 
-
-
-
-
 // MARK: - Wrappers
 
 extension ScoringSettings {
