@@ -19,29 +19,60 @@ struct ContentView: View {
                                     NSSortDescriptor(keyPath: \PlayerEntity.name, ascending: true)],
                   animation: .default)
     private var players: FetchedResults<PlayerEntity>
+    let projectionType = ProjectionType.steamer
 
     let positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "P"]
+
+    var sortedPlayers: [PlayerEntity] {
+        let filteredPlayers = players.filter { player in
+            player.calculatedPoints(for: projectionType, in: viewContext) != nil
+        }
+
+        let sortedPlayers = filteredPlayers.sorted { player1, player2 in
+            guard let points1 = player1.calculatedPoints(for: projectionType, in: viewContext),
+                  let points2 = player2.calculatedPoints(for: projectionType, in: viewContext) else {
+                return false
+            }
+            return points1 > points2
+        }
+        return sortedPlayers
+    }
 
     @State private var currentIndex = 0
 
     var body: some View {
+        
         NavigationView {
-            List {
-                ForEach(players) { player in
-                    NavigationLink(destination: PlayerDetailView(player: player)) {
-                        VStack(alignment: .leading) {
-                            Text(player.name ?? "")
-                                .font(.headline)
-                            Text(player.teamFull ?? "")
-                                .font(.subheadline)
-                        }
-                    }
-                }
-            }
-
-            .navigationTitle("Players")
-            .navigationBarTitleDisplayMode(.inline)
+            CreateNewScoringSettingsView()
         }
+        
+//        NavigationView {
+//            List {
+//                ForEach(sortedPlayers) { player in
+//                    NavigationLink(destination: PlayerDetailView(player: player)) {
+//                        HStack {
+//                            VStack(alignment: .leading) {
+//                                Text(player.name ?? "")
+//                                    .font(.headline)
+//                                Text(player.teamFull ?? "")
+//                                    .font(.subheadline)
+//                            }
+//
+//                            Spacer()
+//
+//                            if let calculatedPoints = player.calculatedPoints(for: projectionType, in: viewContext) {
+//                                Text("\(calculatedPoints, specifier: "%.2f")")
+//                                    .font(.subheadline)
+//                                    .foregroundColor(.secondary)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            .navigationTitle("Players")
+//            .navigationBarTitleDisplayMode(.inline)
+//        }
     }
 }
 

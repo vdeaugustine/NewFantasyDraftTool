@@ -68,11 +68,10 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
             } else {
                 // Create a new PlayerEntity
                 player = PlayerEntity(context: context)
-                player.id = playerId
+                player.id = "\(playerId)"
                 player.name = playerData["PlayerName"] as? String ?? ""
                 player.teamShort = playerData["Team"] as? String ?? ""
                 player.teamFull = playerData["ShortName"] as? String ?? ""
-                print("Player NOT already existed. New player now: ", player.id)
             }
         } catch {
             print("Error fetching player: \(error)")
@@ -81,6 +80,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
 
         // Create a new PlayerStatsEntity
         let stats = PlayerStatsEntity(context: context)
+        stats.playerids = "\(playerId)"
         stats.g = playerData["G"] as? Int64 ?? 0
         stats.ab = playerData["AB"] as? Int64 ?? 0
         stats.pa = playerData["PA"] as? Int64 ?? 0
@@ -136,7 +136,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
         player.addToStats(stats)
 
         // Calculate default points for the player
-        player.calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: container.viewContext)
+//        player.calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: container.viewContext)
 
         var oldPos = player.position
         if oldPos != nil {

@@ -13,7 +13,6 @@ struct PersistenceController {
     static var preview: PersistenceController = {
         let result = PersistenceController(inMemory: false)
         let context = result.container.viewContext
-
         for position in Position.batters {
             for projection in ProjectionType.batterArr {
                 loadBatters(projectionType: projection, position: position, container: result.container)

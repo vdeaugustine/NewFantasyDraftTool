@@ -8,6 +8,93 @@
 import CoreData
 import Foundation
 
+class CalculatingLoadingManager: ObservableObject {
+    @Published var progress: Double = 0
+    
+    var shared = CalculatingLoadingManager()
+}
+
+// MARK: - Wrappers
+
+extension ScoringSettings {
+    func calculatePointsForAllPlayers(_ loadingManager: inout CalculatingLoadingManager, completion: @escaping ([CalculatedPoints]) -> Void) {
+        let context = PersistenceController.preview.container.viewContext
+        let playerStatsFetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
+        do {
+            let playerStatsEntities = try context.fetch(playerStatsFetchRequest)
+            var calculatedPointsArray = [CalculatedPoints]()
+            for playerStatsEntity in playerStatsEntities {
+                let calculatedPointsFetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
+                
+                guard let playerId = playerStatsEntity.playerids,
+                      let projectionType = playerStatsEntity.projectionType else {
+                    continue
+                }
+                calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
+
+                let count = try context.count(for: calculatedPointsFetchRequest)
+                if count > 0 {
+                    continue
+                }
+                let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity)
+                print("Created new \(calculatedPoints)")
+                calculatedPointsArray.append(calculatedPoints)
+                do {
+                    try context.save()
+                    
+                } catch {
+                    
+                }
+            }
+            completion(calculatedPointsArray)
+        } catch {
+            print("Error fetching player stats entities: \(error)")
+        }
+    }
+
+
+    static func isDuplicateName(name: String) -> Bool {
+        let context: NSManagedObjectContext
+            context = PersistenceController.preview.container.viewContext
+        
+
+        let fetchRequest: NSFetchRequest<ScoringSettings> = ScoringSettings.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name == %@", name)
+        do {
+            let count = try context.count(for: fetchRequest)
+            return count > 0
+        } catch {
+            print("Error counting ScoringSettings entities: \(error.localizedDescription)")
+            return true
+        }
+    }
+
+    static var defaultScoring: ScoringSettings {
+        let context = PersistenceController.preview.container.viewContext
+        
+
+        if let found = fetchDefaultPointsScoringSettings(in: context) {
+            return found
+        }
+
+        createDefaultScoringSettings(context: context)
+
+        return fetchDefaultPointsScoringSettings(in: context)!
+    }
+
+    /// Returns a count of the ScoringSettings objects saved in data.
+    static func count(context: NSManagedObjectContext) -> Int {
+        let request: NSFetchRequest<ScoringSettings> = ScoringSettings.fetchRequest()
+        do {
+            let count = try context.count(for: request)
+            return count
+        } catch {
+            print("Error fetching ScoringSettings entities: \(error.localizedDescription)")
+            return 0
+        }
+    }
+}
+
 extension ScoringSettings {
     /// Fetches the ScoringSettings object with the name "DefaultPoints" from the given context.
     /// - Parameter context: The NSManagedObjectContext to fetch from.

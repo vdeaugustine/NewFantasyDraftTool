@@ -10,7 +10,12 @@ import CoreData
 
 @main
 struct NewFantasyDraftToolApp: App {
+    
+    #if DEBUG
     let persistenceController = PersistenceController.preview
+    #else
+    let persistenceController = PersistenceController.shared
+    #endif
     
     func printAllScoringSettings() {
         let context = persistenceController.container.viewContext

@@ -9,6 +9,23 @@ import CoreData
 import Foundation
 
 extension PlayerEntity {
+    
+    
+    func getCalculatedPointsEntity(forProjectionType projectionType: String) -> CalculatedPoints? {
+        guard let playerId = id else {
+            return nil
+        }
+        let fetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
+        do {
+            let result = try managedObjectContext?.fetch(fetchRequest)
+            return result?.first
+        } catch {
+            print("Failed to fetch calculated points entity: \(error)")
+            return nil
+        }
+    }
+
     /// An array of `PlayerStatsEntity` sorted by projection type.
     ///
     /// This computed property returns an array of player stats entities that are
@@ -229,38 +246,46 @@ extension PlayerEntity {
     // Check if the context has a PlayerStatsEntity object that has the given projection type
     // Get the player from the PlayerStatsEntity object
     // Check if there is a ScoringSettings object with the name "DefaultPoints" in the context
-    func calculateDefaultPointsIfNeeded(projectionType: ProjectionType, mainContext: NSManagedObjectContext) {
-            
-            // Get the PlayerStatsEntity
-            guard let playerStats = statsArray.first(where: { $0.projectionType == projectionType.rawValue }),
-                  let player = playerStats.player,
-                  let scoringSettings = ScoringSettings.fetchDefaultPointsScoringSettings(in: mainContext) else {
-                return
-            }
-            
-            // Check if there is already a CalculatedPoints object with the name "DefaultPoints" for this playerStatsEntity
-            guard playerStats.calculatedPoints?.first(where: { ($0 as? CalculatedPoints)?.scoringName == "DefaultPoints" }) == nil else {
-                return
-            }
-            
-            // Calculate the fantasy points for this player using the "DefaultPoints" ScoringSettings object
-            let fantasyPoints = player.fantasyPoints(scoringSettings: scoringSettings, projectionType: projectionType) ?? 0.0
-            
-            // Create a new CalculatedPoints object with the calculated points
-            let calculatedPoints = CalculatedPoints(context: mainContext)
-            calculatedPoints.amount = fantasyPoints
-            calculatedPoints.scoringName = "DefaultPoints"
-            calculatedPoints.playerStats = playerStats
-            
-            // Save the calculated points to the main context
-            do {
-                try mainContext.save()
-            } catch {
-                print("Error saving calculated points: \(error.localizedDescription)")
-            }
+    func calculateDefaultPointsIfNeeded(projectionType: ProjectionType, mainContext: NSManagedObjectContext) -> CalculatedPoints? {
+        // Get the PlayerStatsEntity
+        guard let playerStats = statsArray.first(where: { $0.projectionType == projectionType.rawValue }) else {
+            print("Error: No playerStats found with given projectionType")
+            return nil
         }
 
+        guard let player = playerStats.player else {
+            print("Error: No player found for the given playerStats")
+            return nil
+        }
 
+        guard let scoringSettings = ScoringSettings.fetchDefaultPointsScoringSettings(in: mainContext) else {
+            print("Error: Failed to fetch default scoring settings")
+            return nil
+        }
+
+        // Check if there is already a CalculatedPoints object with the name "DefaultPoints" for this playerStatsEntity
+        guard playerStats.calculatedPoints?.first(where: { ($0 as? CalculatedPoints)?.scoringName == "DefaultPoints" }) == nil else {
+            return nil
+        }
+
+        // Calculate the fantasy points for this player using the "DefaultPoints" ScoringSettings object
+        let fantasyPoints = player.fantasyPoints(scoringSettings: scoringSettings, projectionType: projectionType) ?? 0.0
+
+        // Create a new CalculatedPoints object with the calculated points
+        let calculatedPoints = CalculatedPoints(context: mainContext)
+        calculatedPoints.amount = fantasyPoints
+        calculatedPoints.scoringName = "DefaultPoints"
+        calculatedPoints.playerStats = playerStats
+
+        // Save the calculated points to the main context
+        do {
+            try mainContext.save()
+        } catch {
+            print("Error saving calculated points: \(error.localizedDescription)")
+        }
+
+        return calculatedPoints
+    }
 
     /// Calculates and returns the total fantasy points for a player for a given projection type.
     ///
@@ -272,29 +297,36 @@ extension PlayerEntity {
     ///
     /// - Returns: An optional Double value representing the total fantasy points for the player for the given projection type, or nil if no statistics exist for the player.
     func calculatedPoints(for projectionType: ProjectionType, in context: NSManagedObjectContext) -> Double? {
-            guard let playerStats = stats?.allObjects as? [PlayerStatsEntity] else {
-                return nil
-            }
-
-            // Find the matching PlayerStatsEntity with the given projectionType
-            if let matchingStats = playerStats.first(where: { $0.projectionType == projectionType.rawValue }) {
-                if let calculatedPointsSet = matchingStats.calculatedPoints,
-                   let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
-                   let calculatedPoints = calculatedPointsArray.first {
-                    // If there's already a CalculatedPoints entity, return its amount
-                    return calculatedPoints.amount
-                } else {
-                    // If no CalculatedPoints entity exists, call the calculateDefaultPointsIfNeeded function
-                    calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: context)
-                    // Now, the CalculatedPoints should be created, return its amount
-                    if let calculatedPointsSet = matchingStats.calculatedPoints,
-                       let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
-                       let calculatedPoints = calculatedPointsArray.first {
-                        return calculatedPoints.amount
-                    }
-                }
-            }
-
+        guard let playerStats = stats?.allObjects as? [PlayerStatsEntity] else {
             return nil
         }
+
+        // Find the matching PlayerStatsEntity with the given projectionType
+        if let matchingStats = playerStats.first(where: { $0.projectionType == projectionType.rawValue }) {
+            if let calculatedPointsSet = matchingStats.calculatedPoints,
+               let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
+               let calculatedPoints = calculatedPointsArray.first {
+                // If there's already a CalculatedPoints entity, return its amount
+                return calculatedPoints.amount
+            } else {
+                // If no CalculatedPoints entity exists, call the calculateDefaultPointsIfNeeded function
+
+                // Now, the CalculatedPoints should be created, return its amount
+//                    if let calculatedPointsSet = matchingStats.calculatedPoints,
+//                       let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
+//                       let calculatedPoints = calculatedPointsArray.first {
+//                        return calculatedPoints.amount
+//                    }
+
+                guard let calculatedPoints = calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: context) else {
+                    print("No CalculatedPoints found.")
+                    return nil
+                }
+
+                return calculatedPoints.amount
+            }
+        }
+
+        return nil
+    }
 }
