@@ -47,11 +47,12 @@ struct AllScoringSettingsViews: View {
                     print("Error deleting scoring settings: \(error)")
                 }
             }
-            .toolbarAdd {
-                CreateNewScoringSettingsView()
-            }
+            
         }
         .navigationTitle("Scoring Settings")
+        .toolbarAdd {
+            CreateNewScoringSettingsView()
+        }
     }
 }
 

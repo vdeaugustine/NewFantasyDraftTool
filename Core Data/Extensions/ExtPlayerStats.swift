@@ -29,4 +29,16 @@ extension PlayerStatsEntity {
             return nil
         }
     }
+    
+    class func count(for name: String, in context: NSManagedObjectContext) -> Int {
+            let fetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "playerName == %@", name)
+            do {
+                let count = try context.count(for: fetchRequest)
+                return count
+            } catch {
+                print("Error fetching count: \(error)")
+                return 0
+            }
+        }
 }

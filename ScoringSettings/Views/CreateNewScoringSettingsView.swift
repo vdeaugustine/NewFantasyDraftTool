@@ -29,7 +29,7 @@ struct CreateNewScoringSettingsView: View {
 
     @State private var didSave = false
     @State private var goNext = false
-    @Environment (\.dismiss) private var dismiss
+    @Environment(\.dismiss) private var dismiss
 
     var tempName: String {
         "Scoring Settings \(ScoringSettings.count(context: viewContext) + 1)"
@@ -72,12 +72,6 @@ struct CreateNewScoringSettingsView: View {
                 statRow("Walks Allowed", scoringSetting.walksAllowed)
                 statRow("Quality Starts", scoringSetting.qs)
             }
-            
-            if goNext {
-                NavigationLink("GO") {
-                    CalculatingPlayersView(scoringSettings: scoringSetting)
-                }
-            }
         }
         .alert("Successfully saved", isPresented: $didSave, actions: {
             Button("OK") {
@@ -103,6 +97,16 @@ struct CreateNewScoringSettingsView: View {
                 Spacer()
                 Button("Done") {
                     hideKeyboard()
+                }
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if goNext {
+                    NavigationLink("GO") {
+                        CalculatingPlayersView(scoringSettings: scoringSetting)
+                    }
+                } else {
+                    EmptyView()
                 }
             }
         }
@@ -162,7 +166,6 @@ struct CreateNewScoringSettingsView: View {
             Button("OK") {
                 errorVal = ""
                 showError = false
-                
             }
         } message: {
             Text(errorMessage)

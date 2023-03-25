@@ -5,8 +5,8 @@
 //  Created by Vincent DeAugustine on 3/25/23.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 /// CalculatingLoadingManager is a class that manages the progress updates of a long-running task that involves calculating scores for a large number of players. It uses the ObservableObject protocol and the @Published property wrapper to make its progress property observable, which allows SwiftUI to update the UI whenever the progress changes.
 ///
@@ -25,12 +25,12 @@ class CalculatingLoadingManager: ObservableObject {
     // Define a @Published property called progress of type Double, which is initialized to 0.0
     // When this property is updated, SwiftUI will automatically update the UI
     @Published var progress: Double = 0.0
-    
+
     @Published var nameLoading: String = ""
 
     // Create a PassthroughSubject instance of type Double and Never, which can be used to send progress values
     private let progressSubject = PassthroughSubject<Double, Never>()
-    
+
     // Create a PassthroughSubject instance of type Double and Never, which can be used to send progress values
     private let nameLoadingSubject = PassthroughSubject<String, Never>()
 
@@ -42,7 +42,7 @@ class CalculatingLoadingManager: ObservableObject {
             .receive(on: DispatchQueue.main)
             // Assign the received values to the progress property
             .assign(to: &$progress)
-        
+
         nameLoadingSubject
             .receive(on: DispatchQueue.main)
             .assign(to: &$nameLoading)
@@ -51,10 +51,15 @@ class CalculatingLoadingManager: ObservableObject {
     // Define a function called updateProgress that takes a Double value as a parameter
     func updateProgress(_ value: Double) {
         // Send the value using the progressSubject, which will update the progress property and the UI
-        progressSubject.send(value)
+        progressSubject.send(value > 1 ? 1 : value)
     }
-    
+
     func updateName(_ value: String) {
         nameLoadingSubject.send(value)
+    }
+
+    func reset() {
+        updateProgress(0)
+        updateName("")
     }
 }

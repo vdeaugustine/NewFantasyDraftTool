@@ -37,6 +37,8 @@ extension ScoringSettings {
             // Calculate the progress increment value based on the number of players
             let progressInc: Double = 1 / Double(count)
             let totalCount = playerStatsEntities.count
+            print("total count", totalCount)
+            print("Number of juan sotos", PlayerStatsEntity.count(for: "Mike Trout", in: context))
             // Iterate through each PlayerStatsEntity object
             for playerStatsEntity in playerStatsEntities {
                 // Create a fetch request for CalculatedPoints objects
@@ -82,6 +84,7 @@ extension ScoringSettings {
 
             // Call the completion handler
             completion()
+            loadingManager.reset()
 
         } catch {
             // Log any errors that occur during fetching player stats entities

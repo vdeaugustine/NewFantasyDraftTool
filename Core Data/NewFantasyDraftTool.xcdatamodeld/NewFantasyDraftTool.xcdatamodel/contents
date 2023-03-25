@@ -5,8 +5,6 @@
         <attribute name="playerId" optional="YES" attributeType="String"/>
         <attribute name="projectionType" optional="YES" attributeType="String"/>
         <attribute name="scoringName" optional="YES" attributeType="String"/>
-        <relationship name="player" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerEntity" inverseName="calculatedPoints" inverseEntity="PlayerEntity"/>
-        <relationship name="playerStats" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerStatsEntity" inverseName="calculatedPoints" inverseEntity="PlayerStatsEntity"/>
     </entity>
     <entity name="PlayerEntity" representedClassName="PlayerEntity" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="String"/>
@@ -14,7 +12,7 @@
         <attribute name="position" optional="YES" attributeType="String"/>
         <attribute name="teamFull" optional="YES" attributeType="String"/>
         <attribute name="teamShort" optional="YES" attributeType="String"/>
-        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints" inverseName="player" inverseEntity="CalculatedPoints"/>
+        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints"/>
         <relationship name="stats" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PlayerStatsEntity" inverseName="player" inverseEntity="PlayerStatsEntity"/>
     </entity>
     <entity name="PlayerStatsEntity" representedClassName="PlayerStatsEntity" syncable="YES" codeGenerationType="class">
@@ -68,7 +66,7 @@
         <attribute name="wRAA" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="wRC" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="wRCPlus" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints" inverseName="playerStats" inverseEntity="CalculatedPoints"/>
+        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints"/>
         <relationship name="player" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerEntity" inverseName="stats" inverseEntity="PlayerEntity"/>
     </entity>
     <entity name="ScoringSettings" representedClassName="ScoringSettings" syncable="YES" codeGenerationType="class">

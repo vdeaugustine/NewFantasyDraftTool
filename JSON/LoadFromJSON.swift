@@ -53,16 +53,17 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
 
     // Process each dictionary in the decoded data
     for playerData in decodedData {
-        guard let playerId = Int64(playerData["playerids"] as? String) else { continue }
+        guard let playerId = playerData["playerids"] as? String else { continue }
+
         // Check if a PlayerEntity with the same playerId already exists
-        let fetchRequest: NSFetchRequest<PlayerEntity> = PlayerEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %d", playerId)
-        fetchRequest.fetchLimit = 1
+        let playerFetchRequest: NSFetchRequest<PlayerEntity> = PlayerEntity.fetchRequest()
+        playerFetchRequest.predicate = NSPredicate(format: "id == %d", playerId)
+        playerFetchRequest.fetchLimit = 1
 
         var player: PlayerEntity!
 
         do {
-            let fetchedPlayers = try context.fetch(fetchRequest)
+            let fetchedPlayers = try context.fetch(playerFetchRequest)
             if let existingPlayer = fetchedPlayers.first {
                 player = existingPlayer
             } else {
@@ -75,6 +76,22 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
             }
         } catch {
             print("Error fetching player: \(error)")
+            continue
+        }
+
+        // Check if a PlayerStatsEntity with the same playerId and projectionType already exists
+        let statsFetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
+        statsFetchRequest.predicate = NSPredicate(format: "playerids == %@ AND projectionType == %@", playerId, projectionType.rawValue)
+        statsFetchRequest.fetchLimit = 1
+
+        do {
+            let fetchedStats = try context.fetch(statsFetchRequest)
+            if fetchedStats.first != nil {
+                // Skip this iteration since a PlayerStatsEntity with the same playerId and projectionType already exists
+                continue
+            }
+        } catch {
+            print("Error fetching player stats: \(error)")
             continue
         }
 
@@ -136,7 +153,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
         player.addToStats(stats)
 
         // Calculate default points for the player
-//        player.calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: container.viewContext)
+        //        player.calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: container.viewContext)
 
         var oldPos = player.position
         if oldPos != nil {

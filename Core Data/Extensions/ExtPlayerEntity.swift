@@ -288,7 +288,6 @@ extension PlayerEntity {
         let calculatedPoints = CalculatedPoints(context: mainContext)
         calculatedPoints.amount = fantasyPoints
         calculatedPoints.scoringName = "DefaultPoints"
-        calculatedPoints.playerStats = playerStats
         
         // Save the calculated points to the main context
         do {

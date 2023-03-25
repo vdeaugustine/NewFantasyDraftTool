@@ -72,6 +72,5 @@ extension CalculatedPoints {
         self.playerId = playerID
         self.projectionType = projectionType
         self.scoringName = scoringSettings.name
-        self.playerStats = playerStatsEntity
     }
 }
