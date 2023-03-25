@@ -17,11 +17,12 @@ struct CalculatingPlayersView: View {
     @State private var isCalculating = false
     @State private var calculatedPoints: [CalculatedPoints] = []
     @StateObject private var loadingManager = CalculatingLoadingManager.shared
+    @State private var projectionType: ProjectionType = .steamer
     
     func fetchedResults() -> [CalculatedPoints] {
         let fetchRequest = NSFetchRequest<CalculatedPoints>(entityName: "CalculatedPoints")
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CalculatedPoints.amount, ascending: false)]
-        fetchRequest.predicate = NSPredicate(format: "scoringName == %@", scoringSettings.name!)
+        fetchRequest.predicate = NSPredicate(format: "scoringName == %@ AND projectionType == %@", scoringSettings.name!, projectionType.rawValue)
         do {
             let results = try viewContext.fetch(fetchRequest)
             return results
@@ -36,6 +37,14 @@ struct CalculatingPlayersView: View {
             if isCalculating {
                 ProgressView("Calculating and sorting scores...", value: loadingManager.progress)
             } else {
+                Picker("Projection", selection: $projectionType) {
+                    ForEach(ProjectionType.allCases, id: \.self) { proj in
+                        Text(proj.title).tag(proj)
+                    }
+                }
+                .onChange(of: projectionType) { newValue in
+                    calculatedPoints = fetchedResults()
+                }
                 List(calculatedPoints) { calculatedPoint in
                     if let amount = calculatedPoint.amount,
                        let playerName = calculatedPoint.getPlayer()?.name,
