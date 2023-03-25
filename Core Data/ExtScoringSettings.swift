@@ -54,7 +54,7 @@ class CalculatingLoadingManager: ObservableObject {
 
 extension ScoringSettings {
     // This function calculates points for all players in the database and updates the progress using the provided loadingManager
-    func calculatePointsForAllPlayers(context: NSManagedObjectContext, _ loadingManager: CalculatingLoadingManager, completion: @escaping ([CalculatedPoints]) -> Void) {
+    func calculatePointsForAllPlayers(context: NSManagedObjectContext, _ loadingManager: CalculatingLoadingManager, completion: @escaping () -> Void) {
 //        // Get the view context from the persistence controller
 //        let context = PersistenceController.preview.container.viewContext
         // Create a fetch request for PlayerStatsEntity objects
@@ -111,8 +111,8 @@ extension ScoringSettings {
                 }
             }
             
-            // Call the completion handler with the array of calculated points
-            completion(calculatedPointsArray)
+            // Call the completion handler 
+            completion()
 
         } catch {
             // Log any errors that occur during fetching player stats entities

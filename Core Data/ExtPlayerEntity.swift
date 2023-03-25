@@ -9,23 +9,35 @@ import CoreData
 import Foundation
 
 extension PlayerEntity {
+        /// A method to fetch the associated CalculatedPoints object for the specified projection type
+        /// Returns optional CalculatedPoints object
+        func getCalculatedPointsEntity(forProjectionType projectionType: String) -> CalculatedPoints? {
+            // Ensure that the player ID property is not nil before proceeding
+            guard let playerId = id else {
+                return nil
+            }
+            
+            // Create a new NSFetchRequest object for the CalculatedPoints class
+            let fetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
+            
+            // Set the predicate for the fetch request to match the player ID and projection type
+            fetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
+            
+            do {
+                // Execute the fetch request and get the results
+                let result = try managedObjectContext?.fetch(fetchRequest)
+                
+                // Return the first object in the results array
+                return result?.first
+                
+            } catch {
+                // If there was an error, print it and return nil
+                print("Failed to fetch calculated points entity: \(error)")
+                return nil
+            }
+        }
     
     
-    func getCalculatedPointsEntity(forProjectionType projectionType: String) -> CalculatedPoints? {
-        guard let playerId = id else {
-            return nil
-        }
-        let fetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
-        do {
-            let result = try managedObjectContext?.fetch(fetchRequest)
-            return result?.first
-        } catch {
-            print("Failed to fetch calculated points entity: \(error)")
-            return nil
-        }
-    }
-
     /// An array of `PlayerStatsEntity` sorted by projection type.
     ///
     /// This computed property returns an array of player stats entities that are
@@ -43,14 +55,14 @@ extension PlayerEntity {
     /// let stats: [PlayerStatsEntity] = ...
     /// let sortedStats = stats.statsArray
     /// ```
-
+    
     var statsArray: [PlayerStatsEntity] {
         let set = stats as? Set<PlayerStatsEntity> ?? []
         return set.sorted {
             $0.projectionType ?? "" < $1.projectionType ?? ""
         }
     }
-
+    
     /// Returns a PlayerStatsEntity object for the specified projection type.
     ///
     /// Provide a ProjectionType parameter to specify the type of projection to return stats for.
@@ -72,7 +84,7 @@ extension PlayerEntity {
     func stats(for projectionType: ProjectionType) -> PlayerStatsEntity? {
         statsArray.first(where: { $0.projectionType == projectionType.rawValue })
     }
-
+    
     /// Returns the value of a specific statistical category for a given projection type.
     ///
     /// Use this function to retrieve the value of a specific statistical category (such as hits, runs, or strikeouts) for a given projection type (such as regular season or playoffs). Pass in the statName parameter as a string representing the desired statistical category, and the projectionType parameter as a string representing the desired projection type. The function returns the value of the requested statistical category as an optional Any type.
@@ -99,103 +111,103 @@ extension PlayerEntity {
         }
         let stat = stats.first!
         switch statName {
-            case "AB":
-                return stat.ab
-            case "BB":
-                return stat.bb
-            case "CS":
-                return stat.cs
-            case "G":
-                return stat.g
-            case "GDP":
-                return stat.gdp
-            case "H":
-                return stat.h
-            case "HBP":
-                return stat.hbp
-            case "HR":
-                return stat.hr
-            case "IBB":
-                return stat.ibb
-            case "1B":
-                return stat.oneB
-            case "PA":
-                return stat.pa
-            case "R":
-                return stat.r
-            case "RBI":
-                return stat.rbi
-            case "SB":
-                return stat.sb
-            case "SF":
-                return stat.sf
-            case "SH":
-                return stat.sh
-            case "SO":
-                return stat.so
-            case "AVG":
-                return stat.avg
-            case "OBP":
-                return stat.obp
-            case "SLG":
-                return stat.slg
-            case "OPS":
-                return stat.ops
-            case "wOBA":
-                return stat.wOBA
-            case "BB%":
-                return stat.bbPercentage
-            case "K%":
-                return stat.kPercentage
-            case "BB/K":
-                return stat.bbPerK
-            case "ISO":
-                return stat.iso
-            case "Spd":
-                return stat.spd
-            case "BABIP":
-                return stat.babip
-            case "UBR":
-                return stat.ubr
-            case "GDPRuns":
-                return stat.gdpRuns
-            case "wRC":
-                return stat.wRC
-            case "wRAA":
-                return stat.wRAA
-            case "UZR":
-                return stat.uzr
-            case "wBsR":
-                return stat.wBsR
-            case "BaseRunning":
-                return stat.baseRunning
-            case "WAR":
-                return stat.war
-            case "Off":
-                return stat.offense
-            case "Def":
-                return stat.def
-            case "wRC+":
-                return stat.wRCPlus
-            case "ADP":
-                return stat.adp
-            case "Pos":
-                return stat.Pos
-            case "minpos":
-                return stat.minpos
-            case "teamid":
-                return stat.teamid
-            case "League":
-                return stat.League
-            case "PlayerName":
-                return stat.playerName
-            case "playerids":
-                return stat.playerids
-            default:
-                return nil
+        case "AB":
+            return stat.ab
+        case "BB":
+            return stat.bb
+        case "CS":
+            return stat.cs
+        case "G":
+            return stat.g
+        case "GDP":
+            return stat.gdp
+        case "H":
+            return stat.h
+        case "HBP":
+            return stat.hbp
+        case "HR":
+            return stat.hr
+        case "IBB":
+            return stat.ibb
+        case "1B":
+            return stat.oneB
+        case "PA":
+            return stat.pa
+        case "R":
+            return stat.r
+        case "RBI":
+            return stat.rbi
+        case "SB":
+            return stat.sb
+        case "SF":
+            return stat.sf
+        case "SH":
+            return stat.sh
+        case "SO":
+            return stat.so
+        case "AVG":
+            return stat.avg
+        case "OBP":
+            return stat.obp
+        case "SLG":
+            return stat.slg
+        case "OPS":
+            return stat.ops
+        case "wOBA":
+            return stat.wOBA
+        case "BB%":
+            return stat.bbPercentage
+        case "K%":
+            return stat.kPercentage
+        case "BB/K":
+            return stat.bbPerK
+        case "ISO":
+            return stat.iso
+        case "Spd":
+            return stat.spd
+        case "BABIP":
+            return stat.babip
+        case "UBR":
+            return stat.ubr
+        case "GDPRuns":
+            return stat.gdpRuns
+        case "wRC":
+            return stat.wRC
+        case "wRAA":
+            return stat.wRAA
+        case "UZR":
+            return stat.uzr
+        case "wBsR":
+            return stat.wBsR
+        case "BaseRunning":
+            return stat.baseRunning
+        case "WAR":
+            return stat.war
+        case "Off":
+            return stat.offense
+        case "Def":
+            return stat.def
+        case "wRC+":
+            return stat.wRCPlus
+        case "ADP":
+            return stat.adp
+        case "Pos":
+            return stat.Pos
+        case "minpos":
+            return stat.minpos
+        case "teamid":
+            return stat.teamid
+        case "League":
+            return stat.League
+        case "PlayerName":
+            return stat.playerName
+        case "playerids":
+            return stat.playerids
+        default:
+            return nil
         }
     }
-
+    
     /// Converts a given stat name and projection type into a string representation of the corresponding value. If the value is a Double, it will be returned as a string with two decimal places. If the value is an Int, it will be returned as a string.
     /// - Parameters:
     /// - statName: The name of the stat to retrieve the value for.
@@ -209,7 +221,7 @@ extension PlayerEntity {
         }
         return nil
     }
-
+    
     /// Returns an array of available ProjectionTypes based on the statsArray.
     /// The function first maps the projectionType property of all PlayerStatsEntity objects in statsArray
     /// into an array of String values. It then removes any empty strings and maps the remaining strings
@@ -220,7 +232,7 @@ extension PlayerEntity {
         let projectionTypeStrings = statsArray.map { $0.projectionType ?? "" }
         return projectionTypeStrings.compactMap { ProjectionType(rawValue: $0) }
     }
-
+    
     /// Calculates the fantasy points for the player based on the given scoring settings and projection type.
     /// - Parameters:
     /// - scoringSettings: The ScoringSettings object to use for calculating the fantasy points.
@@ -237,12 +249,12 @@ extension PlayerEntity {
         let walksPoints = Double(playerStats.bb) * scoringSettings.bb
         let caughtStealingPoints = Double(playerStats.cs) * scoringSettings.cs
         let strikeoutsPoints = Double(playerStats.so) * scoringSettings.batterK
-
+        
         let fantasyPoints = runsPoints + rbiPoints + totalBasesPoints + stolenBasesPoints + walksPoints + caughtStealingPoints + strikeoutsPoints
-
+        
         return fantasyPoints
     }
-
+    
     // Check if the context has a PlayerStatsEntity object that has the given projection type
     // Get the player from the PlayerStatsEntity object
     // Check if there is a ScoringSettings object with the name "DefaultPoints" in the context
@@ -252,41 +264,41 @@ extension PlayerEntity {
             print("Error: No playerStats found with given projectionType")
             return nil
         }
-
+        
         guard let player = playerStats.player else {
             print("Error: No player found for the given playerStats")
             return nil
         }
-
+        
         guard let scoringSettings = ScoringSettings.fetchDefaultPointsScoringSettings(in: mainContext) else {
             print("Error: Failed to fetch default scoring settings")
             return nil
         }
-
+        
         // Check if there is already a CalculatedPoints object with the name "DefaultPoints" for this playerStatsEntity
         guard playerStats.calculatedPoints?.first(where: { ($0 as? CalculatedPoints)?.scoringName == "DefaultPoints" }) == nil else {
             return nil
         }
-
+        
         // Calculate the fantasy points for this player using the "DefaultPoints" ScoringSettings object
         let fantasyPoints = player.fantasyPoints(scoringSettings: scoringSettings, projectionType: projectionType) ?? 0.0
-
+        
         // Create a new CalculatedPoints object with the calculated points
         let calculatedPoints = CalculatedPoints(context: mainContext)
         calculatedPoints.amount = fantasyPoints
         calculatedPoints.scoringName = "DefaultPoints"
         calculatedPoints.playerStats = playerStats
-
+        
         // Save the calculated points to the main context
         do {
             try mainContext.save()
         } catch {
             print("Error saving calculated points: \(error.localizedDescription)")
         }
-
+        
         return calculatedPoints
     }
-
+    
     /// Calculates and returns the total fantasy points for a player for a given projection type.
     ///
     /// The function calculates the fantasy points based on a given set of scoring settings for the points, and returns the calculated points. The calculated points are determined based on the player's statistics for a given projection type. If no calculated points entity exists for a given projection type, the function calls the calculateDefaultPointsIfNeeded function to create it.
@@ -300,7 +312,7 @@ extension PlayerEntity {
         guard let playerStats = stats?.allObjects as? [PlayerStatsEntity] else {
             return nil
         }
-
+        
         // Find the matching PlayerStatsEntity with the given projectionType
         if let matchingStats = playerStats.first(where: { $0.projectionType == projectionType.rawValue }) {
             if let calculatedPointsSet = matchingStats.calculatedPoints,
@@ -310,23 +322,23 @@ extension PlayerEntity {
                 return calculatedPoints.amount
             } else {
                 // If no CalculatedPoints entity exists, call the calculateDefaultPointsIfNeeded function
-
+                
                 // Now, the CalculatedPoints should be created, return its amount
-//                    if let calculatedPointsSet = matchingStats.calculatedPoints,
-//                       let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
-//                       let calculatedPoints = calculatedPointsArray.first {
-//                        return calculatedPoints.amount
-//                    }
-
+                //                    if let calculatedPointsSet = matchingStats.calculatedPoints,
+                //                       let calculatedPointsArray = calculatedPointsSet.allObjects as? [CalculatedPoints],
+                //                       let calculatedPoints = calculatedPointsArray.first {
+                //                        return calculatedPoints.amount
+                //                    }
+                
                 guard let calculatedPoints = calculateDefaultPointsIfNeeded(projectionType: projectionType, mainContext: context) else {
                     print("No CalculatedPoints found.")
                     return nil
                 }
-
+                
                 return calculatedPoints.amount
             }
         }
-
+        
         return nil
     }
 }
