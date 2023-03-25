@@ -36,7 +36,7 @@ extension ScoringSettings {
             let count = playerStatsEntities.count
             // Calculate the progress increment value based on the number of players
             let progressInc: Double = 1 / Double(count)
-
+            let totalCount = playerStatsEntities.count
             // Iterate through each PlayerStatsEntity object
             for playerStatsEntity in playerStatsEntities {
                 // Create a fetch request for CalculatedPoints objects
@@ -48,8 +48,9 @@ extension ScoringSettings {
                     continue // Skip this iteration if either playerId or projectionType is missing
                 }
 
+                guard let name = name else { continue }
                 // Set the fetch request predicate to filter by playerId, projectionType, and scoringName
-                calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@ AND scoringName == %@", playerId, projectionType, name!)
+                calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@ AND scoringName == %@", playerId, projectionType, name)
 
                 // Check if there are already any CalculatedPoints objects for the given playerId and projectionType
                 let count = try context.count(for: calculatedPointsFetchRequest)
@@ -66,7 +67,10 @@ extension ScoringSettings {
 
                 // Update the progress using the loadingManager's updateProgress method
                 loadingManager.updateProgress(loadingManager.progress + progressInc)
-
+                loadingManager.updateName("\(totalCount)")
+//                if let playerName = calculatedPoints.getPlayer()?.name {
+//                    loadingManager.updateName(playerName)
+//                }
                 // Try to save the context with the new CalculatedPoints object
                 do {
                     try context.save()

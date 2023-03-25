@@ -43,7 +43,7 @@ struct ContentView: View {
     var body: some View {
         
         NavigationView {
-            CreateNewScoringSettingsView()
+            AllScoringSettingsViews()
         }
         
 //        NavigationView {

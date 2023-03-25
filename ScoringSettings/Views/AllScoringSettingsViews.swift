@@ -19,22 +19,39 @@ struct AllScoringSettingsViews: View {
                   sortDescriptors: [NSSortDescriptor(keyPath: \ScoringSettings.name, ascending: true)],
                   animation: .default)
     private var scoringSettings: FetchedResults<ScoringSettings>
-    
+
     // Body
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(scoringSettings) { scoringSetting in
-                    NavigationLink(destination: ScoringSettingsDetailView(scoringSetting: scoringSetting)) {
-                        VStack(alignment: .leading) {
-                            Text(scoringSetting.name ?? "")
-                                .font(.headline)
-                        }
+        List {
+            ForEach(scoringSettings) { scoringSetting in
+                NavigationLink(destination: ScoringSettingsDetailView(scoringSetting: scoringSetting)) {
+                    VStack(alignment: .leading) {
+                        Text(scoringSetting.name ?? "")
+                            .font(.headline)
                     }
                 }
             }
-            .navigationTitle("Scoring Settings")
+            .onDelete { indexSet in
+                // Remove the selected scoring settings from Core Data
+                indexSet.forEach { index in
+                    let scoringSetting = scoringSettings[index]
+                    viewContext.delete(scoringSetting)
+                    print("Deleted successfully")
+                }
+
+                // Save the changes to Core Data
+                do {
+                    try viewContext.save()
+                    print("Saved successfully")
+                } catch {
+                    print("Error deleting scoring settings: \(error)")
+                }
+            }
+            .toolbarAdd {
+                CreateNewScoringSettingsView()
+            }
         }
+        .navigationTitle("Scoring Settings")
     }
 }
 

@@ -44,10 +44,10 @@ struct CalculatingPlayersView: View {
     
     // Body
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             if isCalculating {
                 // If the view is still calculating the scores, show a progress view
-                ProgressView("Calculating and sorting scores...", value: loadingManager.progress)
+                ProgressView("Calculating and sorting scores...\n\(loadingManager.nameLoading)", value: loadingManager.progress)
                 
             } else {
                 // Otherwise, show a picker to select the projection type and a list of calculated points
