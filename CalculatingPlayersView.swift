@@ -5,8 +5,8 @@
 //  Created by Vincent DeAugustine on 3/24/23.
 //
 
-import SwiftUI
 import CoreData
+import SwiftUI
 import Vin
 
 // MARK: - CalculatingPlayersView
@@ -16,13 +16,25 @@ struct CalculatingPlayersView: View {
     @ObservedObject var scoringSettings: ScoringSettings
     @State private var isCalculating = false
     @State private var calculatedPoints: [CalculatedPoints] = []
-    
-    
-    
+    @StateObject private var loadingManager = CalculatingLoadingManager.shared
+
+    func fetchedResults() -> [CalculatedPoints] {
+        let fetchRequest = NSFetchRequest<CalculatedPoints>(entityName: "CalculatedPoints")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CalculatedPoints.amount, ascending: false)]
+        fetchRequest.predicate = NSPredicate(format: "scoringName == %@", scoringSettings.name!)
+        do {
+            let results = try viewContext.fetch(fetchRequest)
+            return results
+        } catch {
+            print("Error fetching results: \(error)")
+            return []
+        }
+    }
+
     var body: some View {
         VStack {
             if isCalculating {
-                ProgressView("Calculating scores...")
+                ProgressView("Calculating scores...", value: loadingManager.progress)
                 Text("Calculating scores")
             } else {
                 List(calculatedPoints) { calculatedPoint in
@@ -31,32 +43,28 @@ struct CalculatingPlayersView: View {
                         Text("\(id)")
                             .spacedOut(text: "\(amount.simpleStr())")
                     }
-                    
+
                     if calculatedPoints.isEmpty {
                         Text("Empty")
                     }
                 }
-                
-                
             }
         }
         .onAppear {
             isCalculating = true
 
             DispatchQueue.global(qos: .background).async {
-                scoringSettings.calculatePointsForAllPlayers {
+                scoringSettings.calculatePointsForAllPlayers(loadingManager) {
                     calculatedPoints = $0
+                    calculatedPoints = fetchedResults()
                     DispatchQueue.main.async {
                         isCalculating = false
                     }
                 }
-
-                
             }
         }
     }
 }
-
 
 // MARK: - CalculatingPlayersView_Previews
 
