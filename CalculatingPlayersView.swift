@@ -34,8 +34,7 @@ struct CalculatingPlayersView: View {
     var body: some View {
         VStack {
             if isCalculating {
-                ProgressView("Calculating scores...", value: loadingManager.progress)
-                Text("Calculating scores")
+                ProgressView("Calculating and sorting scores...", value: loadingManager.progress)
             } else {
                 List(calculatedPoints) { calculatedPoint in
                     if let id = calculatedPoint.playerId,
@@ -54,7 +53,7 @@ struct CalculatingPlayersView: View {
             isCalculating = true
 
             DispatchQueue.global(qos: .background).async {
-                scoringSettings.calculatePointsForAllPlayers(loadingManager) {
+                scoringSettings.calculatePointsForAllPlayers(context: viewContext, loadingManager) {
                     calculatedPoints = $0
                     calculatedPoints = fetchedResults()
                     DispatchQueue.main.async {

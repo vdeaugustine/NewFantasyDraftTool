@@ -17,33 +17,46 @@ import Combine
 //    static var shared = CalculatingLoadingManager()
 //}
 
+// Define a class called CalculatingLoadingManager that conforms to the ObservableObject protocol
 class CalculatingLoadingManager: ObservableObject {
+    // Create a shared instance of the class (singleton pattern) to be used throughout the application
     static let shared = CalculatingLoadingManager()
     
+    // A set to store the Combine framework's cancellable instances to manage their lifetimes
     private var cancellables = Set<AnyCancellable>()
     
+    // Define a @Published property called progress of type Double, which is initialized to 0.0
+    // When this property is updated, SwiftUI will automatically update the UI
     @Published var progress: Double = 0.0
     
+    // Create a PassthroughSubject instance of type Double and Never, which can be used to send progress values
     private let progressSubject = PassthroughSubject<Double, Never>()
     
+    // The private initializer for the class
     private init() {
+        // Connect the progressSubject to the progress property using the Combine framework
         progressSubject
+            // Ensure that the updates are received on the main queue (thread)
             .receive(on: DispatchQueue.main)
+            // Assign the received values to the progress property
             .assign(to: &$progress)
     }
     
+    // Define a function called updateProgress that takes a Double value as a parameter
     func updateProgress(_ value: Double) {
+        // Send the value using the progressSubject, which will update the progress property and the UI
         progressSubject.send(value)
     }
 }
+
 
 // MARK: - Wrappers
 
 extension ScoringSettings {
     // This function calculates points for all players in the database and updates the progress using the provided loadingManager
-    func calculatePointsForAllPlayers(_ loadingManager: CalculatingLoadingManager, completion: @escaping ([CalculatedPoints]) -> Void) {
-        // Get the view context from the persistence controller
-        let context = PersistenceController.preview.container.viewContext
+    func calculatePointsForAllPlayers(context: NSManagedObjectContext, _ loadingManager: CalculatingLoadingManager, completion: @escaping ([CalculatedPoints]) -> Void) {
+//        // Get the view context from the persistence controller
+//        let context = PersistenceController.preview.container.viewContext
         // Create a fetch request for PlayerStatsEntity objects
         let playerStatsFetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
         
@@ -82,6 +95,9 @@ extension ScoringSettings {
                 let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity)
                 // Add the new CalculatedPoints object to the array
                 calculatedPointsArray.append(calculatedPoints)
+                // Insert the calculatedPoints object into the viewContext
+                context.insert(calculatedPoints)
+
 
                 // Update the progress using the loadingManager's updateProgress method
                 loadingManager.updateProgress(loadingManager.progress + progressInc)
