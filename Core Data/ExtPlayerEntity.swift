@@ -9,34 +9,33 @@ import CoreData
 import Foundation
 
 extension PlayerEntity {
-        /// A method to fetch the associated CalculatedPoints object for the specified projection type
-        /// Returns optional CalculatedPoints object
-        func getCalculatedPointsEntity(forProjectionType projectionType: String) -> CalculatedPoints? {
-            // Ensure that the player ID property is not nil before proceeding
-            guard let playerId = id else {
-                return nil
-            }
-            
-            // Create a new NSFetchRequest object for the CalculatedPoints class
-            let fetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
-            
-            // Set the predicate for the fetch request to match the player ID and projection type
-            fetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
-            
-            do {
-                // Execute the fetch request and get the results
-                let result = try managedObjectContext?.fetch(fetchRequest)
-                
-                // Return the first object in the results array
-                return result?.first
-                
-            } catch {
-                // If there was an error, print it and return nil
-                print("Failed to fetch calculated points entity: \(error)")
-                return nil
-            }
+    /// A method to fetch the associated CalculatedPoints object for the specified projection type
+    /// Returns optional CalculatedPoints object
+    func getCalculatedPointsEntity(forProjectionType projectionType: String) -> CalculatedPoints? {
+        // Ensure that the player ID property is not nil before proceeding
+        guard let playerId = id else {
+            return nil
         }
-    
+        
+        // Create a new NSFetchRequest object for the CalculatedPoints class
+        let fetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
+        
+        // Set the predicate for the fetch request to match the player ID and projection type
+        fetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
+        
+        do {
+            // Execute the fetch request and get the results
+            let result = try managedObjectContext?.fetch(fetchRequest)
+            
+            // Return the first object in the results array
+            return result?.first
+            
+        } catch {
+            // If there was an error, print it and return nil
+            print("Failed to fetch calculated points entity: \(error)")
+            return nil
+        }
+    }
     
     /// An array of `PlayerStatsEntity` sorted by projection type.
     ///
@@ -255,9 +254,11 @@ extension PlayerEntity {
         return fantasyPoints
     }
     
-    // Check if the context has a PlayerStatsEntity object that has the given projection type
-    // Get the player from the PlayerStatsEntity object
-    // Check if there is a ScoringSettings object with the name "DefaultPoints" in the context
+    /// Calculates fantasy points for a given ProjectionType and creates a CalculatedPoints object for the player's PlayerStatsEntity with the name "DefaultPoints" if it does not already exist.
+    /// - Parameters:
+    /// - projectionType: The projection type for which to calculate fantasy points.
+    /// - mainContext: The main context in which to save the CalculatedPoints object.
+    /// - Returns: A CalculatedPoints object if one was created, nil otherwise.
     func calculateDefaultPointsIfNeeded(projectionType: ProjectionType, mainContext: NSManagedObjectContext) -> CalculatedPoints? {
         // Get the PlayerStatsEntity
         guard let playerStats = statsArray.first(where: { $0.projectionType == projectionType.rawValue }) else {

@@ -10,7 +10,11 @@ import Foundation
 import Vin
 
 extension PlayerStatsEntity {
-    
+    /// Retrieves the CalculatedPoints object for a given projection type.
+    ///
+    /// - Parameters:
+    ///     - projectionType: The projection type to retrieve the CalculatedPoints object for.
+    /// - Returns: The CalculatedPoints object for the given projection type, or `nil` if it cannot be found.
     func getCalculatedPointsEntity(forProjectionType projectionType: String) -> CalculatedPoints? {
         guard let playerId = playerids else {
             return nil
