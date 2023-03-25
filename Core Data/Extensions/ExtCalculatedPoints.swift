@@ -46,7 +46,7 @@ extension CalculatedPoints {
     /// - Parameters:
     /// - scoringSettings: The ScoringSettings object to use for scoring calculations
     /// - playerStatsEntity: The PlayerStatsEntity object to use for calculating points
-    convenience init(scoringSettings: ScoringSettings, playerStatsEntity: PlayerStatsEntity) {
+    convenience init(scoringSettings: ScoringSettings, playerStatsEntity: PlayerStatsEntity, context: NSManagedObjectContext) {
         // Get the player ID and projection type from the PlayerStatsEntity object
         let playerID = playerStatsEntity.playerids ?? ""
         let projectionType = playerStatsEntity.projectionType ?? ""
@@ -61,11 +61,10 @@ extension CalculatedPoints {
         let kPoints = scoringSettings.batterK * Double(playerStatsEntity.so)
         let amount = bbPoints + rPoints + rbiPoints + sbPoints + csPoints + tbPoints + kPoints
         
-        // Get the persistence controller instance
-        let persistenceController = PersistenceController.preview
+       
         
         // Call the designated initializer on the superclass with the managed object context from the persistence controller
-        self.init(context: persistenceController.container.viewContext)
+        self.init(context: context)
         
         // Set the properties of the instance
         self.amount = amount

@@ -42,6 +42,7 @@ class CalculatingLoadingManager: ObservableObject {
     // Define a function called updateProgress that takes a Double value as a parameter
     func updateProgress(_ value: Double) {
         // Send the value using the progressSubject, which will update the progress property and the UI
-        progressSubject.send(value)
+        
+        progressSubject.send(value > 1 ? 1 : value)
     }
 }

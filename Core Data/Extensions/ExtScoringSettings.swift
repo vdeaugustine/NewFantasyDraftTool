@@ -24,66 +24,64 @@ extension ScoringSettings {
     func calculatePointsForAllPlayers(context: NSManagedObjectContext,
                                       _ loadingManager: CalculatingLoadingManager,
                                       completion: @escaping () -> Void) {
-        // Create a fetch request for PlayerStatsEntity objects
+        let batchSize = 100
         let playerStatsFetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
+        playerStatsFetchRequest.fetchBatchSize = batchSize
 
-        do {
-            // Fetch all PlayerStatsEntity objects from the context
-            let playerStatsEntities = try context.fetch(playerStatsFetchRequest)
-            // Initialize an empty array to store the calculated points
-            var calculatedPointsArray = [CalculatedPoints]()
-            // Get the count of PlayerStatsEntity objects
-            let count = playerStatsEntities.count
-            // Calculate the progress increment value based on the number of players
-            let progressInc: Double = 1 / Double(count)
+        let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateContext.parent = context
 
-            // Iterate through each PlayerStatsEntity object
-            for playerStatsEntity in playerStatsEntities {
-                // Create a fetch request for CalculatedPoints objects
-                let calculatedPointsFetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
+        privateContext.perform {
+            do {
+                var offset = 0
+                var shouldContinue = true
 
-                // Get the playerId and projectionType from the PlayerStatsEntity object
-                guard let playerId = playerStatsEntity.playerids,
-                      let projectionType = playerStatsEntity.projectionType else {
-                    continue // Skip this iteration if either playerId or projectionType is missing
+                while shouldContinue {
+                    playerStatsFetchRequest.fetchOffset = offset
+                    let playerStatsEntities = try privateContext.fetch(playerStatsFetchRequest)
+
+                    if playerStatsEntities.isEmpty {
+                        shouldContinue = false
+                    } else {
+                        let entitiesCount = playerStatsEntities.count
+                        let progressInc: Double = 1 / Double(entitiesCount)
+                        for playerStatsEntity in playerStatsEntities {
+                            guard let playerId = playerStatsEntity.playerids,
+                                  let projectionType = playerStatsEntity.projectionType else {
+                                continue
+                            }
+
+                            let calculatedPointsFetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
+                            calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@ AND scoringName == %@", playerId, projectionType, self.name!)
+
+                            let count = try privateContext.count(for: calculatedPointsFetchRequest)
+                            if count > 0 {
+                                continue
+                            }
+
+                            let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity, context: privateContext)
+                            privateContext.insert(calculatedPoints)
+
+                            loadingManager.updateProgress(loadingManager.progress + progressInc)
+                        }
+
+                        try privateContext.save()
+                        privateContext.reset()
+                        offset += batchSize
+                    }
                 }
 
-                // Set the fetch request predicate to filter by playerId, projectionType, and scoringName
-                calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@ AND scoringName == %@", playerId, projectionType, name!)
-
-                // Check if there are already any CalculatedPoints objects for the given playerId and projectionType
-                let count = try context.count(for: calculatedPointsFetchRequest)
-                if count > 0 {
-                    continue // Skip this iteration if there are already CalculatedPoints objects for the given playerId and projectionType
+                DispatchQueue.main.async {
+                    completion()
                 }
-
-                // Create a new CalculatedPoints object using the current ScoringSettings and PlayerStatsEntity
-                let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity)
-                // Add the new CalculatedPoints object to the array
-                calculatedPointsArray.append(calculatedPoints)
-                // Insert the calculatedPoints object into the viewContext
-                context.insert(calculatedPoints)
-
-                // Update the progress using the loadingManager's updateProgress method
-                loadingManager.updateProgress(loadingManager.progress + progressInc)
-
-                // Try to save the context with the new CalculatedPoints object
-                do {
-                    try context.save()
-                } catch {
-                    // Log any errors that occur during saving
-                    print("Error saving calculated points: \(error)")
-                }
+            } catch {
+                print("Error fetching player stats entities: \(error)")
             }
-
-            // Call the completion handler
-            completion()
-
-        } catch {
-            // Log any errors that occur during fetching player stats entities
-            print("Error fetching player stats entities: \(error)")
         }
     }
+
+
+
 
     /// Determines if there is a ScoringSettings entity with the given name.
     ///

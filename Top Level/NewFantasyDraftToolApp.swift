@@ -12,11 +12,11 @@ import SwiftUI
 @main
 struct NewFantasyDraftToolApp: App {
     // Properties
-#if DEBUG
+//#if DEBUG
     let persistenceController = PersistenceController.preview
-#else
-    let persistenceController = PersistenceController.shared
-#endif
+//#else
+//    let persistenceController = PersistenceController.shared
+//#endif
     
     // A function to print all ScoringSettings entities in Core Data
     func printAllScoringSettings() {
