@@ -25,9 +25,14 @@ class CalculatingLoadingManager: ObservableObject {
     // Define a @Published property called progress of type Double, which is initialized to 0.0
     // When this property is updated, SwiftUI will automatically update the UI
     @Published var progress: Double = 0.0
+    
+    @Published var iteration: Int = 0
 
     // Create a PassthroughSubject instance of type Double and Never, which can be used to send progress values
     private let progressSubject = PassthroughSubject<Double, Never>()
+    
+    private let iterationSubject = PassthroughSubject<Int, Never>()
+    
 
     // The private initializer for the class
     private init() {
@@ -37,6 +42,10 @@ class CalculatingLoadingManager: ObservableObject {
             .receive(on: DispatchQueue.main)
             // Assign the received values to the progress property
             .assign(to: &$progress)
+        
+        iterationSubject
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$iteration)
     }
 
     // Define a function called updateProgress that takes a Double value as a parameter
@@ -44,5 +53,9 @@ class CalculatingLoadingManager: ObservableObject {
         // Send the value using the progressSubject, which will update the progress property and the UI
         
         progressSubject.send(value > 1 ? 1 : value)
+    }
+    
+    func updateIteration(_ value: Int) {
+        iterationSubject.send(value)
     }
 }

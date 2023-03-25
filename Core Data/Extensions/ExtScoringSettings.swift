@@ -32,11 +32,11 @@ extension ScoringSettings {
         privateContext.parent = context
 
         privateContext.perform {
-            do {
-                var offset = 0
-                var shouldContinue = true
-
-                while shouldContinue {
+            var offset = 0
+            var shouldContinue = true
+            
+            while shouldContinue {
+                do {
                     playerStatsFetchRequest.fetchOffset = offset
                     let playerStatsEntities = try privateContext.fetch(playerStatsFetchRequest)
 
@@ -55,30 +55,33 @@ extension ScoringSettings {
                             calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@ AND scoringName == %@", playerId, projectionType, self.name!)
 
                             let count = try privateContext.count(for: calculatedPointsFetchRequest)
-                            if count > 0 {
-                                continue
-                            }
+//                            if count > 0 {
+//                                continue
+//                            }
 
                             let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity, context: privateContext)
                             privateContext.insert(calculatedPoints)
 
                             loadingManager.updateProgress(loadingManager.progress + progressInc)
+                            loadingManager.updateIteration(loadingManager.iteration + 1)
                         }
 
                         try privateContext.save()
                         privateContext.reset()
                         offset += batchSize
                     }
+                } catch {
+                    print("Error fetching player stats entities: \(error)")
+                    shouldContinue = false
                 }
+            }
 
-                DispatchQueue.main.async {
-                    completion()
-                }
-            } catch {
-                print("Error fetching player stats entities: \(error)")
+            DispatchQueue.main.async {
+                completion()
             }
         }
     }
+
 
 
 
