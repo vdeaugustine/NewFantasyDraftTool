@@ -7,59 +7,103 @@
 
 import CoreData
 import Foundation
+import Combine
 
 // MARK: - CalculatingLoadingManager
 
-class CalculatingLoadingManager: ObservableObject {
-    @Published var progress: Double = 0
+//class CalculatingLoadingManager: ObservableObject {
+//    @Published var progress: Double = 0
+//
+//    static var shared = CalculatingLoadingManager()
+//}
 
-    static var shared = CalculatingLoadingManager()
+class CalculatingLoadingManager: ObservableObject {
+    static let shared = CalculatingLoadingManager()
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    @Published var progress: Double = 0.0
+    
+    private let progressSubject = PassthroughSubject<Double, Never>()
+    
+    private init() {
+        progressSubject
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$progress)
+    }
+    
+    func updateProgress(_ value: Double) {
+        progressSubject.send(value)
+    }
 }
 
 // MARK: - Wrappers
 
 extension ScoringSettings {
+    // This function calculates points for all players in the database and updates the progress using the provided loadingManager
     func calculatePointsForAllPlayers(_ loadingManager: CalculatingLoadingManager, completion: @escaping ([CalculatedPoints]) -> Void) {
+        // Get the view context from the persistence controller
         let context = PersistenceController.preview.container.viewContext
+        // Create a fetch request for PlayerStatsEntity objects
         let playerStatsFetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
+        
         do {
+            // Fetch all PlayerStatsEntity objects from the context
             let playerStatsEntities = try context.fetch(playerStatsFetchRequest)
+            // Initialize an empty array to store the calculated points
             var calculatedPointsArray = [CalculatedPoints]()
+            // Get the count of PlayerStatsEntity objects
             let count = playerStatsEntities.count
+            // Calculate the progress increment value based on the number of players
             let progressInc: Double = 1 / Double(count)
+            
+            // Iterate through each PlayerStatsEntity object
             for playerStatsEntity in playerStatsEntities {
+                // Create a fetch request for CalculatedPoints objects
                 let calculatedPointsFetchRequest: NSFetchRequest<CalculatedPoints> = CalculatedPoints.fetchRequest()
 
+                // Get the playerId and projectionType from the PlayerStatsEntity object
                 guard let playerId = playerStatsEntity.playerids,
                       let projectionType = playerStatsEntity.projectionType else {
-                    continue
-                }
-                calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@", playerId, projectionType)
-
-                let count = try context.count(for: calculatedPointsFetchRequest)
-                if count > 0 {
-                    continue
-                }
-                let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity)
-                calculatedPointsArray.append(calculatedPoints)
-//                DispatchQueue.main.async {
-                loadingManager.progress += progressInc
-//                }
-
-                do {
-                    try context.save()
-
-                } catch {
-                    
+                    continue // Skip this iteration if either playerId or projectionType is missing
                 }
                 
+                // Set the fetch request predicate to filter by playerId, projectionType, and scoringName
+                calculatedPointsFetchRequest.predicate = NSPredicate(format: "playerId == %@ AND projectionType == %@ AND scoringName == %@", playerId, projectionType, self.name!)
+
+
+                // Check if there are already any CalculatedPoints objects for the given playerId and projectionType
+                let count = try context.count(for: calculatedPointsFetchRequest)
+                if count > 0 {
+                    continue // Skip this iteration if there are already CalculatedPoints objects for the given playerId and projectionType
+                }
+                
+                // Create a new CalculatedPoints object using the current ScoringSettings and PlayerStatsEntity
+                let calculatedPoints = CalculatedPoints(scoringSettings: self, playerStatsEntity: playerStatsEntity)
+                // Add the new CalculatedPoints object to the array
+                calculatedPointsArray.append(calculatedPoints)
+
+                // Update the progress using the loadingManager's updateProgress method
+                loadingManager.updateProgress(loadingManager.progress + progressInc)
+
+                // Try to save the context with the new CalculatedPoints object
+                do {
+                    try context.save()
+                } catch {
+                    // Log any errors that occur during saving
+                    print("Error saving calculated points: \(error)")
+                }
             }
+            
+            // Call the completion handler with the array of calculated points
             completion(calculatedPointsArray)
 
         } catch {
+            // Log any errors that occur during fetching player stats entities
             print("Error fetching player stats entities: \(error)")
         }
     }
+
 
     static func isDuplicateName(name: String) -> Bool {
         let context: NSManagedObjectContext
