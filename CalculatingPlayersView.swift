@@ -17,7 +17,7 @@ struct CalculatingPlayersView: View {
     @State private var isCalculating = false
     @State private var calculatedPoints: [CalculatedPoints] = []
     @StateObject private var loadingManager = CalculatingLoadingManager.shared
-
+    
     func fetchedResults() -> [CalculatedPoints] {
         let fetchRequest = NSFetchRequest<CalculatedPoints>(entityName: "CalculatedPoints")
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CalculatedPoints.amount, ascending: false)]
@@ -30,19 +30,24 @@ struct CalculatingPlayersView: View {
             return []
         }
     }
-
+    
     var body: some View {
         VStack {
             if isCalculating {
                 ProgressView("Calculating and sorting scores...", value: loadingManager.progress)
             } else {
                 List(calculatedPoints) { calculatedPoint in
-                    if let id = calculatedPoint.playerId,
-                       let amount = calculatedPoint.amount {
-                        Text("\(id)")
-                            .spacedOut(text: "\(amount.simpleStr())")
+                    if let amount = calculatedPoint.amount,
+                       let playerName = calculatedPoint.getPlayer()?.name,
+                       let projectionType = calculatedPoint.projectionType { // Fetch player's name using the helper function
+                        VStack {
+                            Text("\(playerName)")
+                                .spacedOut(text: "\(amount.simpleStr())")
+                            Text(projectionType)
+                                .font(.footnote)
+                        }
                     }
-
+                    
                     if calculatedPoints.isEmpty {
                         Text("Empty")
                     }
@@ -51,7 +56,7 @@ struct CalculatingPlayersView: View {
         }
         .onAppear {
             isCalculating = true
-
+            
             DispatchQueue.global(qos: .background).async {
                 scoringSettings.calculatePointsForAllPlayers(context: viewContext, loadingManager) {
                     calculatedPoints = $0
