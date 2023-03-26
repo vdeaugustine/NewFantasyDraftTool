@@ -42,9 +42,10 @@ struct ContentView: View {
 
     var body: some View {
         
-        NavigationView {
-            AllPlayersView(currentProjectionType: .atc, firstStat: .hr)
-        }
+        BaseballDiamondAnimationView()
+//        NavigationView {
+//            AllPlayersView(currentProjectionType: .atc, firstStat: .hr)
+//        }
         
 //        NavigationView {
 //            List {

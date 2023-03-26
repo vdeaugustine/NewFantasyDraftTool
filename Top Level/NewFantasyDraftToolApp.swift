@@ -34,17 +34,34 @@ struct NewFantasyDraftToolApp: App {
         }
     }
     
+    @State private var showSplash = true
+    
     // Body
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            if showSplash {
+                VStack {
+                    Color.red
+                }.ignoresSafeArea().frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onAppear {
-                    // When the app appears, create the default scoring settings and print all scoring settings in Core Data
-                    
-                    ScoringSettings.createDefaultScoringSettings(context: persistenceController.container.viewContext)
-                    printAllScoringSettings()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                        withAnimation {
+                            showSplash = false
+                        }
+                    }
                 }
+            }
+            else {
+                ContentView()
+                    .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                    .onAppear {
+                        // When the app appears, create the default scoring settings and print all scoring settings in Core Data
+                        
+                        ScoringSettings.createDefaultScoringSettings(context: persistenceController.container.viewContext)
+    //                    printAllScoringSettings()
+                    }
+                
+            }
         }
     }
 }
