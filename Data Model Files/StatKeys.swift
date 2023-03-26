@@ -79,7 +79,7 @@ enum StatKeys {
         case league = "League"
         case playerName = "PlayerName"
         case playerIds = "playerids"
-        
+
         /// A way to access all the batter strings in the correct order
         static let allArr: [String] = [Batter.pa.rawValue, Batter.ab.rawValue, Batter.r.rawValue, Batter.h.rawValue, Batter.oneB.rawValue, Batter.twoB.rawValue, Batter.threeB.rawValue, Batter.hr.rawValue, Batter.rbi.rawValue, Batter.bb.rawValue,
                                        Batter.ibb.rawValue, Batter.so.rawValue, Batter.hbp.rawValue, Batter.sf.rawValue, Batter.sh.rawValue, Batter.gdp.rawValue, Batter.sb.rawValue, Batter.cs.rawValue, Batter.avg.rawValue, Batter.obp.rawValue,
@@ -88,8 +88,41 @@ enum StatKeys {
                                        Batter.wBsR.rawValue, Batter.baseRunning.rawValue, Batter.war.rawValue, Batter.off.rawValue, Batter.def.rawValue, Batter.wRCPlus.rawValue, Batter.adp.rawValue,
                                        Batter.position.rawValue, Batter.minPosition.rawValue, Batter.teamId.rawValue, Batter.league.rawValue, Batter.playerName.rawValue,
                                        Batter.playerIds.rawValue]
+
+        static let mainStats: [String] = [Batter.pa.rawValue,
+                                     Batter.ab.rawValue,
+                                     Batter.r.rawValue,
+                                     Batter.h.rawValue,
+                                     Batter.oneB.rawValue,
+                                     Batter.twoB.rawValue,
+                                     Batter.threeB.rawValue,
+                                     Batter.hr.rawValue,
+                                     Batter.rbi.rawValue,
+                                     Batter.bb.rawValue,
+                                     Batter.ibb.rawValue,
+                                     Batter.so.rawValue,
+                                     Batter.hbp.rawValue,
+                                     Batter.sf.rawValue,
+                                     Batter.sh.rawValue,
+                                     Batter.gdp.rawValue,
+                                     Batter.sb.rawValue,
+                                     Batter.cs.rawValue,
+                                     Batter.avg.rawValue,
+                                     Batter.obp.rawValue,
+                                     Batter.slg.rawValue,
+                                     Batter.ops.rawValue,
+                                     Batter.wOBA.rawValue,
+                                     Batter.bbPercentage.rawValue,
+                                     Batter.kPercentage.rawValue,
+                                     Batter.bbPerK.rawValue,
+                                     Batter.iso.rawValue,
+                                     Batter.spd.rawValue,
+                                     Batter.babip.rawValue,
+                                     Batter.war.rawValue,
+                                     Batter.wRCPlus.rawValue,
+                                     Batter.adp.rawValue]
     }
-    
+
     /// A collection of static constants representing statistical categories for baseball pitchers.
     ///
     /// Use the constants defined in Pitcher to represent statistical categories
@@ -97,7 +130,7 @@ enum StatKeys {
     /// representing a unique statistical category.
     ///
     ///      let wins = Pitcher.w
-    ///       let strikeouts = Pitcher.so 
+    ///       let strikeouts = Pitcher.so
     ///
     /// Use the constants to access statistical categories by name. These constants
     /// can be useful when working with APIs that return statistical data in JSON

@@ -31,14 +31,28 @@ extension PlayerStatsEntity {
     }
     
     class func count(for name: String, in context: NSManagedObjectContext) -> Int {
-            let fetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "playerName == %@", name)
-            do {
-                let count = try context.count(for: fetchRequest)
-                return count
-            } catch {
-                print("Error fetching count: \(error)")
-                return 0
-            }
+        let fetchRequest: NSFetchRequest<PlayerStatsEntity> = PlayerStatsEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "playerName == %@", name)
+        do {
+            let count = try context.count(for: fetchRequest)
+            return count
+        } catch {
+            print("Error fetching count: \(error)")
+            return 0
         }
+    }
+    
+    
+    
+    enum StatKeys: String, CaseIterable {
+        case ab, adp, avg, babip, baseRunning, bb, bbPercentage, bbPerK, cs, def, g, gdp, gdpRuns, h, hbp, hr, ibb, iso, kPercentage, league, minpos, obp, offense, oneB, ops, pa, playerids, playerName, pos, projectionType, r, rbi, sb, sf, sh, slg, so, spd, tb, teamid, threeB, twoB, ubr, uzr, war, wBsR, wOBA, wRAA, wRC, wRCPlus
+    }
+
+    func attributeName(for statKey: StatKeys) -> String {
+        return statKey.rawValue
+    }
+    
+    
+    
+    
 }

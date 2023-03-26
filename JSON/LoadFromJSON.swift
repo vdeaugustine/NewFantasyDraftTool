@@ -144,6 +144,7 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
         stats.teamid = playerData["teamid"] as? Int64 ?? 0
         stats.League = playerData["League"] as? String ?? ""
         stats.projectionType = projectionType.rawValue
+        stats.playerName = playerData["PlayerName"] as? String ?? ""
 
         let singles = stats.h - stats.twoB - stats.threeB - stats.hr
         let tb = singles + (stats.twoB * 2) + (stats.threeB * 3) + (stats.hr * 4)
