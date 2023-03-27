@@ -52,13 +52,19 @@ extension PlayerStatsEntity {
     /// It is meant to be used for fetching stats
     /// You can also just call it without raw value and get its string since it is CustomStringConvertable
     enum StatKeys: String, CaseIterable, CustomStringConvertible, Identifiable, Codable, Hashable {
-        var id: String { self.rawValue }
-        
+        var id: String { rawValue }
+
         case ab, adp, avg, babip, baseRunning, bb, bbPercentage, bbPerK, cs, def, g, gdp, gdpRuns, h, hbp, hr, ibb, iso, kPercentage, league, minpos, obp, offense, oneB, ops, pa, playerids, playerName, pos, projectionType, r, rbi, sb, sf, sh, slg, so, spd, tb, teamid, threeB, twoB, ubr, uzr, war, wBsR, wOBA, wRAA, wRC, wRCPlus
 
         var description: String { rawValue }
+
+        static let useful: [PlayerStatsEntity.StatKeys] = [ab, adp, avg, babip, baseRunning, bb, bbPercentage, bbPerK, cs, def, g, gdp, gdpRuns, h, hbp, hr, ibb, iso, kPercentage, obp, offense, oneB, ops, pa, r, rbi, sb, sf, sh, slg, so, spd, tb, threeB, twoB, ubr, uzr, war, wBsR, wOBA, wRAA, wRC, wRCPlus]
+
+        static let shouldBeInts: [PlayerStatsEntity.StatKeys] = [ab, bb, g, h, hbp, hr, ibb, oneB, pa, r, rbi, sb, sf, so, tb, threeB, twoB]
         
-        static let useful: [PlayerStatsEntity.StatKeys] = [  ab, adp, avg, babip, baseRunning, bb, bbPercentage, bbPerK, cs, def, g, gdp, gdpRuns, h, hbp, hr, ibb, iso, kPercentage, obp, offense, oneB, ops, pa, r, rbi, sb, sf, sh, slg, so, spd, tb, threeB, twoB, ubr, uzr, war, wBsR, wOBA, wRAA, wRC, wRCPlus ]
+        var shouldBeInt: Bool {
+            Self.shouldBeInts.contains(self)
+        }
     }
 
     func attributeName(for statKey: StatKeys) -> String {
@@ -77,4 +83,10 @@ extension PlayerStatsEntity {
         request.sortDescriptors = [NSSortDescriptor(key: statKey.rawValue, ascending: false)]
         return request
     }
+
+    func value(forKey key: StatKeys) -> Any? {
+        value(forKey: key.rawValue)
+    }
+
+   
 }

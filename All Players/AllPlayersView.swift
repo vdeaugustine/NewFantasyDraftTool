@@ -11,31 +11,30 @@ import CoreData
 
 // MARK: - AllPlayersView
 
-
 // A SwiftUI view that displays a list of player stats based on the selected projection type and stat type.
 struct AllPlayersView: View {
     // Get the managed object context from the environment.
     @Environment(\.managedObjectContext) private var viewContext
-    
+
     // State variables for the current projection type and selected stat.
     @State private var currentProjectionType: ProjectionType
     @State private var selectedStat: PlayerStatsEntity.StatKeys
-    
+
     // A fetch request for player stats based on the current projection type and selected stat.
     @FetchRequest private var playerStats: FetchedResults<PlayerStatsEntity>
-    
+
     // Initialize the view with the given projection type and stat type.
     init(currentProjectionType: ProjectionType, firstStat: PlayerStatsEntity.StatKeys) {
         // Set the initial values for the state variables.
         _currentProjectionType = State(initialValue: currentProjectionType)
         _selectedStat = State(initialValue: firstStat)
-        
+
         // Create a fetch request for the given projection type and stat type.
         let fetchRequest = PlayerStatsEntity.fetchRequestForProjectionType(projectionType: currentProjectionType, sortBy: firstStat)
         // Initialize the fetch request with the created fetch request.
         _playerStats = FetchRequest(fetchRequest: fetchRequest)
     }
-    
+
     // The body of the view.
     var body: some View {
         VStack {
@@ -47,7 +46,7 @@ struct AllPlayersView: View {
                     }
                 }
                 .padding()
-                
+
                 // A picker for the selected stat type.
                 Picker("Stat Type", selection: $selectedStat) {
                     ForEach(PlayerStatsEntity.StatKeys.allCases, id: \.self) { stat in
@@ -59,7 +58,7 @@ struct AllPlayersView: View {
                     updateFetchRequest()
                 }
             }
-            
+
             // A list of player stats based on the current projection type and selected stat type.
             List(playerStats, id: \.objectID) { playerStat in
                 let attributeName = playerStat.attributeName(for: selectedStat)
@@ -70,7 +69,6 @@ struct AllPlayersView: View {
                     Text("\(playerStat.playerName ?? "")")
                         .spacedOut(text: "\(formattedStatValue(value))")
                         .allPartsTappable(alignment: .leading)
-                        
                 }
             }
         }
@@ -81,27 +79,26 @@ struct AllPlayersView: View {
             updateFetchRequest()
         })
     }
-    
+
     // Update the fetch request with the current projection type and selected stat type.
     func updateFetchRequest() {
         let predicate = NSPredicate(format: "projectionType == %@", currentProjectionType.rawValue)
         playerStats.nsPredicate = predicate
     }
-    
+
     // Format a stat value as a string.
     func formattedStatValue(_ value: Any?) -> String {
         if let intValue = value as? Int64 {
             return String(intValue)
         } else if let doubleValue = value as? Double {
-            return String(format: "%.2f", doubleValue)
+            return doubleValue.formatForBaseball()
         } else if let stringValue = value as? String {
             return stringValue
         }
-        
+
         return "N/A"
     }
 }
-
 
 // MARK: - AllPlayersView_Previews
 

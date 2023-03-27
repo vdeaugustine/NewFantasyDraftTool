@@ -8,16 +8,39 @@
 import SwiftUI
 
 
+
 struct PlayerStatsDetailView: View {
     let playerStats: PlayerStatsEntity
+    
+    // Format a stat value as a string.
+    func formattedStatValue(_ value: Any?) -> String {
+        if let intValue = value as? Int64 {
+            return String(intValue)
+        } else if let doubleValue = value as? Double {
+            return doubleValue.formatForBaseball()
+        } else if let stringValue = value as? String {
+            return stringValue
+        }
+        
+        return "N/A"
+    }
 
     var body: some View {
         List(PlayerStatsEntity.StatKeys.useful) { statKey in
             Text(statKey.rawValue)
-                .spacedOut(text: playerStats.value(forKey: statKey.rawValue) as? String ?? "" )
+                .spacedOut(text: formattedStatValue(playerStats.value(forKey: statKey.rawValue)))
             
         }
         .navigationTitle("Player Stats Details")
+        .toolbar {
+            ToolbarItem() {
+                NavigationLink {
+                    EditPlayerStatsView(playerStats: playerStats)
+                } label: {
+                    Text("Edit")
+                }
+            }
+        }
     }
 }
 
