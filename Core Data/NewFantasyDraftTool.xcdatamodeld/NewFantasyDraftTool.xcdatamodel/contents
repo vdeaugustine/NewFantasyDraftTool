@@ -5,13 +5,16 @@
         <attribute name="playerId" optional="YES" attributeType="String"/>
         <attribute name="projectionType" optional="YES" attributeType="String"/>
         <attribute name="scoringName" optional="YES" attributeType="String"/>
+        <relationship name="player" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerEntity" inverseName="calculatedPoints" inverseEntity="PlayerEntity"/>
+        <relationship name="playerStats" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerStatsEntity" inverseName="calculatedPoints" inverseEntity="PlayerStatsEntity"/>
     </entity>
     <entity name="Draft" representedClassName="Draft" syncable="YES" codeGenerationType="class">
         <attribute name="creationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="currentPick" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="currentProjection" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <relationship name="pool" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerPool"/>
+        <relationship name="draftedPlayers" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DraftPlayer" inverseName="draft" inverseEntity="DraftPlayer"/>
+        <relationship name="pool" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerPool" inverseName="draft" inverseEntity="PlayerPool"/>
         <relationship name="settings" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DraftSettings" inverseName="drafts" inverseEntity="DraftSettings"/>
         <relationship name="teams" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DraftTeam" inverseName="draft" inverseEntity="DraftTeam"/>
     </entity>
@@ -20,6 +23,9 @@
         <attribute name="pickNumber" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="playerId" optional="YES" attributeType="String"/>
         <attribute name="weightWhenDrafted" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="draft" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Draft" inverseName="draftedPlayers" inverseEntity="Draft"/>
+        <relationship name="player" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerEntity" inverseName="draftPlayer" inverseEntity="PlayerEntity"/>
+        <relationship name="playerStat" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerStatsEntity" inverseName="draftPlayer" inverseEntity="PlayerStatsEntity"/>
         <relationship name="team" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DraftTeam" inverseName="players" inverseEntity="DraftTeam"/>
     </entity>
     <entity name="DraftSettings" representedClassName="DraftSettings" syncable="YES" codeGenerationType="class">
@@ -28,8 +34,8 @@
         <attribute name="numberOfTeams" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="playersPerTeam" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="drafts" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Draft" inverseName="settings" inverseEntity="Draft"/>
-        <relationship name="rosterRequirements" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RosterRequirements"/>
-        <relationship name="scoringSystems" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ScoringSettings"/>
+        <relationship name="rosterRequirements" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RosterRequirements" inverseName="draftSettings" inverseEntity="RosterRequirements"/>
+        <relationship name="scoringSystems" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ScoringSettings" inverseName="draftSettings" inverseEntity="ScoringSettings"/>
     </entity>
     <entity name="DraftTeam" representedClassName="DraftTeam" syncable="YES" codeGenerationType="class">
         <attribute name="draftPosition" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -44,10 +50,14 @@
         <attribute name="position" optional="YES" attributeType="String"/>
         <attribute name="teamFull" optional="YES" attributeType="String"/>
         <attribute name="teamShort" optional="YES" attributeType="String"/>
-        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints"/>
+        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints" inverseName="player" inverseEntity="CalculatedPoints"/>
+        <relationship name="draftPlayer" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DraftPlayer" inverseName="player" inverseEntity="DraftPlayer"/>
         <relationship name="stats" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PlayerStatsEntity" inverseName="player" inverseEntity="PlayerStatsEntity"/>
     </entity>
-    <entity name="PlayerPool" representedClassName="PlayerPool" syncable="YES" codeGenerationType="class"/>
+    <entity name="PlayerPool" representedClassName="PlayerPool" syncable="YES" codeGenerationType="class">
+        <relationship name="availablePlayers" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PlayerStatsEntity" inverseName="pool" inverseEntity="PlayerStatsEntity"/>
+        <relationship name="draft" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Draft" inverseName="pool" inverseEntity="Draft"/>
+    </entity>
     <entity name="PlayerStatsEntity" representedClassName="PlayerStatsEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ab" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="adp" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
@@ -99,10 +109,21 @@
         <attribute name="wRAA" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="wRC" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="wRCPlus" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints"/>
+        <relationship name="calculatedPoints" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CalculatedPoints" inverseName="playerStats" inverseEntity="CalculatedPoints"/>
+        <relationship name="draftPlayer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DraftPlayer" inverseName="playerStat" inverseEntity="DraftPlayer"/>
         <relationship name="player" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerEntity" inverseName="stats" inverseEntity="PlayerEntity"/>
+        <relationship name="pool" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlayerPool" inverseName="availablePlayers" inverseEntity="PlayerPool"/>
     </entity>
-    <entity name="RosterRequirements" representedClassName="RosterRequirements" syncable="YES" codeGenerationType="class"/>
+    <entity name="RosterRequirements" representedClassName="RosterRequirements" syncable="YES" codeGenerationType="class">
+        <attribute name="min1B" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="min2B" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="min3B" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="minOF" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="minRP" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="minSP" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="minSS" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="draftSettings" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DraftSettings" inverseName="rosterRequirements" inverseEntity="DraftSettings"/>
+    </entity>
     <entity name="ScoringSettings" representedClassName="ScoringSettings" syncable="YES" codeGenerationType="class">
         <attribute name="batterK" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="bb" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
@@ -122,6 +143,7 @@
         <attribute name="tb" optional="YES" attributeType="Float" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="walksAllowed" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="wins" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="draftSettings" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DraftSettings" inverseName="scoringSystems" inverseEntity="DraftSettings"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="name"/>
