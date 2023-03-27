@@ -52,13 +52,13 @@ extension CalculatedPoints {
         let projectionType = playerStatsEntity.projectionType ?? ""
         
         // Calculate the points using the scoring settings and player stats
-        let bbPoints = scoringSettings.bb * Double(playerStatsEntity.bb)
-        let rPoints = scoringSettings.r * Double(playerStatsEntity.r)
-        let rbiPoints = scoringSettings.rbi * Double(playerStatsEntity.rbi)
-        let sbPoints = scoringSettings.sb * Double(playerStatsEntity.sb)
-        let csPoints = scoringSettings.cs * Double(playerStatsEntity.cs)
-        let tbPoints = scoringSettings.tb * Double(playerStatsEntity.tb)
-        let kPoints = scoringSettings.batterK * Double(playerStatsEntity.so)
+        let bbPoints = scoringSettings.bb * Float(playerStatsEntity.bb)
+        let rPoints = scoringSettings.r * Float(playerStatsEntity.r)
+        let rbiPoints = scoringSettings.rbi * Float(playerStatsEntity.rbi)
+        let sbPoints = scoringSettings.sb * Float(playerStatsEntity.sb)
+        let csPoints = scoringSettings.cs * Float(playerStatsEntity.cs)
+        let tbPoints = scoringSettings.tb * Float(playerStatsEntity.tb)
+        let kPoints = scoringSettings.batterK * Float(playerStatsEntity.so)
         let amount = bbPoints + rPoints + rbiPoints + sbPoints + csPoints + tbPoints + kPoints
         
         // Get the persistence controller instance

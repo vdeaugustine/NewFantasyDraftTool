@@ -43,7 +43,7 @@ struct ContentView: View {
     var body: some View {
         
         NavigationView {
-            AllPlayersView(currentProjectionType: .atc, firstStat: .hr)
+            AllPlayersView(currentProjectionType: .myProjections, firstStat: .hr)
         }
 //        NavigationView {
 //            AllPlayersView(currentProjectionType: .atc, firstStat: .hr)

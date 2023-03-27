@@ -53,9 +53,9 @@ struct CreateNewScoringSettingsView: View {
             }
 
             Section("Batter") {
-                statRow("TB", scoringSetting.tb)
-                statRow("R", scoringSetting.r)
-                statRow("RBI", scoringSetting.rbi)
+                statRow("TB", Float(scoringSetting.tb))
+                statRow("R", Float(scoringSetting.r))
+                statRow("RBI", Float(scoringSetting.rbi))
                 statRow("SB", scoringSetting.sb)
                 statRow("CS", scoringSetting.cs)
                 statRow("BB", scoringSetting.bb)
@@ -117,7 +117,7 @@ struct CreateNewScoringSettingsView: View {
                 .keyboardType(.decimalPad)
             Button("Submit") {
                 guard let selectedStat = selectedStat,
-                      let editedValue = Double(editedValue) else {
+                      let editedValue = Float(editedValue) else {
                     errorVal = "\(editedValue)"
                     showError = true
                     return
@@ -172,7 +172,7 @@ struct CreateNewScoringSettingsView: View {
         }
     }
 
-    private func statRow(_ name: String, _ value: Double) -> some View {
+    private func statRow(_ name: String, _ value: Float) -> some View {
         Button {
             selectedStat = name
             editedValue = String(value)
@@ -182,7 +182,7 @@ struct CreateNewScoringSettingsView: View {
         }
     }
 
-    private func updateValue(for stat: String, value: Double) {
+    private func updateValue(for stat: String, value: Float) {
         switch stat {
             case "TB":
                 scoringSetting.tb = value

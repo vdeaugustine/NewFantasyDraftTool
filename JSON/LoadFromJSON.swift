@@ -8,19 +8,19 @@
 import CoreData
 import Foundation
 
-extension Int64 {
-    /// Creates a new `Int64` instance from an optional `String`.
+extension Int16 {
+    /// Creates a new `Int16` instance from an optional `String`.
     ///
-    /// If the string can be parsed as an integer, the initializer returns a new `Int64` instance
+    /// If the string can be parsed as an integer, the initializer returns a new `Int16` instance
     /// containing the parsed value. If the string is `nil`, the initializer returns `nil`.
     ///
     /// - Parameter string: The string to parse as an integer.
     ///
-    /// - Returns: A new `Int64` instance containing the parsed value of `string`, or `nil` if
+    /// - Returns: A new `Int16` instance containing the parsed value of `string`, or `nil` if
     ///   `string` could not be parsed as an integer.
     ///
     /// - Note: This initializer uses the `init?(_ text: String, radix: Int = default)` initializer
-    ///   provided by `Int64` to parse the string as an integer. If the string cannot be parsed as an
+    ///   provided by `Int16` to parse the string as an integer. If the string cannot be parsed as an
     ///   integer, the initializer returns `nil`.
     init?(_ string: String?) {
         guard let string = string else { return nil }
@@ -98,50 +98,50 @@ func loadBatters(projectionType: ProjectionType, position: Position, container: 
         // Create a new PlayerStatsEntity
         let stats = PlayerStatsEntity(context: context)
         stats.playerids = "\(playerId)"
-        stats.g = playerData["G"] as? Int64 ?? 0
-        stats.ab = playerData["AB"] as? Int64 ?? 0
-        stats.pa = playerData["PA"] as? Int64 ?? 0
-        stats.h = playerData["H"] as? Int64 ?? 0
-        stats.oneB = playerData["1B"] as? Int64 ?? 0
-        stats.twoB = playerData["2B"] as? Int64 ?? 0
-        stats.threeB = playerData["3B"] as? Int64 ?? 0
-        stats.hr = playerData["HR"] as? Int64 ?? 0
-        stats.r = playerData["R"] as? Int64 ?? 0
-        stats.rbi = playerData["RBI"] as? Int64 ?? 0
-        stats.bb = playerData["BB"] as? Int64 ?? 0
-        stats.ibb = playerData["IBB"] as? Int64 ?? 0
-        stats.so = playerData["SO"] as? Int64 ?? 0
-        stats.hbp = playerData["HBP"] as? Int64 ?? 0
-        stats.sf = playerData["SF"] as? Int64 ?? 0
-        stats.sh = playerData["SH"] as? Int64 ?? 0
-        stats.gdp = playerData["GDP"] as? Int64 ?? 0
-        stats.sb = playerData["SB"] as? Int64 ?? 0
-        stats.cs = playerData["CS"] as? Int64 ?? 0
-        stats.avg = playerData["AVG"] as? Double ?? 0
-        stats.obp = playerData["OBP"] as? Double ?? 0
-        stats.slg = playerData["SLG"] as? Double ?? 0
-        stats.ops = playerData["OPS"] as? Double ?? 0
-        stats.wOBA = playerData["wOBA"] as? Double ?? 0
-        stats.bbPercentage = playerData["BB%"] as? Double ?? 0
-        stats.kPercentage = playerData["K%"] as? Double ?? 0
-        stats.bbPerK = playerData["BB/K"] as? Double ?? 0
-        stats.iso = playerData["ISO"] as? Double ?? 0
-        stats.spd = playerData["Spd"] as? Double ?? 0
-        stats.babip = playerData["BABIP"] as? Double ?? 0
-        stats.ubr = playerData["UBR"] as? Double ?? 0
-        stats.gdpRuns = playerData["GDPRuns"] as? Double ?? 0
-        stats.wRC = playerData["wRC"] as? Double ?? 0
-        stats.wRAA = playerData["wRAA"] as? Double ?? 0
-        stats.uzr = playerData["UZR"] as? Double ?? 0
-        stats.wBsR = playerData["wBsR"] as? Double ?? 0
-        stats.baseRunning = playerData["BaseRunning"] as? Double ?? 0
-        stats.war = playerData["WAR"] as? Double ?? 0
-        stats.offense = playerData["Off"] as? Double ?? 0
-        stats.def = playerData["Def"] as? Double ?? 0
-        stats.wRCPlus = playerData["wRC+"] as? Double ?? 0
-        stats.adp = playerData["ADP"] as? Double ?? 0
+        stats.g = playerData["G"] as? Int16 ?? 0
+        stats.ab = playerData["AB"] as? Int16 ?? 0
+        stats.pa = playerData["PA"] as? Int16 ?? 0
+        stats.h = playerData["H"] as? Int16 ?? 0
+        stats.oneB = playerData["1B"] as? Int16 ?? 0
+        stats.twoB = playerData["2B"] as? Int16 ?? 0
+        stats.threeB = playerData["3B"] as? Int16 ?? 0
+        stats.hr = playerData["HR"] as? Int16 ?? 0
+        stats.r = playerData["R"] as? Int16 ?? 0
+        stats.rbi = playerData["RBI"] as? Int16 ?? 0
+        stats.bb = playerData["BB"] as? Int16 ?? 0
+        stats.ibb = playerData["IBB"] as? Int16 ?? 0
+        stats.so = playerData["SO"] as? Int16 ?? 0
+        stats.hbp = playerData["HBP"] as? Int16 ?? 0
+        stats.sf = playerData["SF"] as? Int16 ?? 0
+        stats.sh = playerData["SH"] as? Int16 ?? 0
+        stats.gdp = playerData["GDP"] as? Int16 ?? 0
+        stats.sb = playerData["SB"] as? Int16 ?? 0
+        stats.cs = playerData["CS"] as? Int16 ?? 0
+        stats.avg = playerData["AVG"] as? Float ?? 0
+        stats.obp = playerData["OBP"] as? Float ?? 0
+        stats.slg = playerData["SLG"] as? Float ?? 0
+        stats.ops = playerData["OPS"] as? Float ?? 0
+        stats.wOBA = playerData["wOBA"] as? Float ?? 0
+        stats.bbPercentage = playerData["BB%"] as? Float ?? 0
+        stats.kPercentage = playerData["K%"] as? Float ?? 0
+        stats.bbPerK = playerData["BB/K"] as? Float ?? 0
+        stats.iso = playerData["ISO"] as? Float ?? 0
+        stats.spd = playerData["Spd"] as? Float ?? 0
+        stats.babip = playerData["BABIP"] as? Float ?? 0
+        stats.ubr = playerData["UBR"] as? Float ?? 0
+        stats.gdpRuns = playerData["GDPRuns"] as? Float ?? 0
+        stats.wRC = playerData["wRC"] as? Float ?? 0
+        stats.wRAA = playerData["wRAA"] as? Float ?? 0
+        stats.uzr = playerData["UZR"] as? Float ?? 0
+        stats.wBsR = playerData["wBsR"] as? Float ?? 0
+        stats.baseRunning = playerData["BaseRunning"] as? Float ?? 0
+        stats.war = playerData["WAR"] as? Float ?? 0
+        stats.offense = playerData["Off"] as? Float ?? 0
+        stats.def = playerData["Def"] as? Float ?? 0
+        stats.wRCPlus = playerData["wRC+"] as? Float ?? 0
+        stats.adp = playerData["ADP"] as? Float ?? 0
         stats.minpos = playerData["minpos"] as? String ?? ""
-        stats.teamid = playerData["teamid"] as? Int64 ?? 0
+        stats.teamid = playerData["teamid"] as? Int16 ?? 0
         stats.League = playerData["League"] as? String ?? ""
         stats.projectionType = projectionType.rawValue
         stats.playerName = playerData["PlayerName"] as? String ?? ""

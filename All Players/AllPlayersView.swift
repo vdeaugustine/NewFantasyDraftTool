@@ -88,10 +88,10 @@ struct AllPlayersView: View {
 
     // Format a stat value as a string.
     func formattedStatValue(_ value: Any?) -> String {
-        if let intValue = value as? Int64 {
+        if let intValue = value as? Int16 {
             return String(intValue)
-        } else if let doubleValue = value as? Double {
-            return doubleValue.formatForBaseball()
+        } else if let FloatValue = value as? Float {
+            return FloatValue.formatForBaseball()
         } else if let stringValue = value as? String {
             return stringValue
         }

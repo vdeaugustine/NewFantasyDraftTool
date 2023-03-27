@@ -14,7 +14,7 @@ import Vin
 struct EditPlayerStatsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     let playerStats: PlayerStatsEntity
-    @State private var editedStats: [PlayerStatsEntity.StatKeys: Double] = [:]
+    @State private var editedStats: [PlayerStatsEntity.StatKeys: Float] = [:]
     @State private var selectedStat: PlayerStatsEntity.StatKeys?
     @State private var alertText = ""
     @State private var selectedValue: Int = 0
@@ -63,10 +63,10 @@ struct EditPlayerStatsView: View {
 
     // Format a stat value as a string.
     func formattedStatValue(_ value: Any?) -> String {
-        if let intValue = value as? Int64 {
+        if let intValue = value as? Int16 {
             return String(intValue)
-        } else if let doubleValue = value as? Double {
-            return doubleValue.formatForBaseball()
+        } else if let FloatValue = value as? Float {
+            return FloatValue.formatForBaseball()
         } else if let stringValue = value as? String {
             return stringValue
         }
@@ -77,10 +77,28 @@ struct EditPlayerStatsView: View {
     func value(forKey key: PlayerStatsEntity.StatKeys) -> String {
         if let edited = editedStats[key] {
             return edited.formatForBaseball()
-        } else if let existing = playerStats.value(forKey: key.rawValue) as? Double {
+        } else if let existing = playerStats.value(forKey: key.rawValue) as? Float {
             return existing.formatForBaseball()
         }
         return "N/A"
+    }
+
+    func updateCalculatedStats() {
+        for statKey in PlayerStatsEntity.StatKeys.useful {
+            if let newValue = editedStats[statKey] {
+                playerStats.setValue(newValue, forKey: statKey.rawValue)
+            }
+        }
+
+        // Update calculated stats
+
+        playerStats.avg = Float(h) / Float(ab)
+
+        playerStats.obp = Float(h + bb + hbp) / Float(pa)
+
+        playerStats.slg = Float(tb) / Float(ab)
+
+        playerStats.ops = playerStats.obp + playerStats.slg
     }
 
     var body: some View {
@@ -92,7 +110,6 @@ struct EditPlayerStatsView: View {
                     self.showAlert = true
                 }
             }) {
-                
                 if self.stateProperty(for: statKey) != nil {
                     Text(statKey.rawValue)
                         .spacedOut(text: value(forKey: statKey))
@@ -105,13 +122,14 @@ struct EditPlayerStatsView: View {
             .buttonStyle(.plain)
         }
         .navigationTitle("Edit Player Stats")
-        
+
         .intAlert(showAlert: $showAlert,
                   value: $editedValue,
                   title: selectedStat?.rawValue,
                   completion: { success in
                       if success, let statKey = selectedStat {
-                          editedStats[statKey] = Double(editedValue)
+                          editedStats[statKey] = Float(editedValue)
+                          updateCalculatedStats()
                       }
                       selectedStat = nil
                   })
@@ -176,7 +194,7 @@ struct EditPlayerStatsView: View {
         newStats.projectionType = "myProjections"
 
         for statKey in PlayerStatsEntity.StatKeys.useful {
-            let newValue = editedStats[statKey] ?? (playerStats.value(forKey: statKey.rawValue) as? Double ?? 0)
+            let newValue = editedStats[statKey] ?? (playerStats.value(forKey: statKey.rawValue) as? Float ?? 0)
             newStats.setValue(newValue, forKey: statKey.rawValue)
         }
 

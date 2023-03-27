@@ -207,14 +207,14 @@ extension PlayerEntity {
         }
     }
     
-    /// Converts a given stat name and projection type into a string representation of the corresponding value. If the value is a Double, it will be returned as a string with two decimal places. If the value is an Int, it will be returned as a string.
+    /// Converts a given stat name and projection type into a string representation of the corresponding value. If the value is a Float, it will be returned as a string with two decimal places. If the value is an Int, it will be returned as a string.
     /// - Parameters:
     /// - statName: The name of the stat to retrieve the value for.
     /// - projectionType: The projection type to retrieve the value for.
     /// - Returns: A string representation of the corresponding value for the given stat name and projection type, or nil if no value could be retrieved.
     func getStatStr(for statName: String, projectionType: ProjectionType) -> String? {
-        if let asDouble = getStat(for: statName, projectionType: projectionType.rawValue) as? Double {
-            return asDouble.formatForBaseball()
+        if let asFloat = getStat(for: statName, projectionType: projectionType.rawValue) as? Float {
+            return asFloat.formatForBaseball()
         } else if let asInt = getStat(for: statName, projectionType: projectionType.rawValue) as? Int {
             return asInt.str
         }
@@ -236,18 +236,18 @@ extension PlayerEntity {
     /// - Parameters:
     /// - scoringSettings: The ScoringSettings object to use for calculating the fantasy points.
     /// - projectionType: The projection type to use for calculating the fantasy points.
-    /// - Returns: The calculated fantasy points as a Double, or nil if the player stats for the given projection type cannot be found.
-    func fantasyPoints(scoringSettings: ScoringSettings, projectionType: ProjectionType) -> Double? {
+    /// - Returns: The calculated fantasy points as a Float, or nil if the player stats for the given projection type cannot be found.
+    func fantasyPoints(scoringSettings: ScoringSettings, projectionType: ProjectionType) -> Float? {
         guard let playerStats = statsArray.first(where: { $0.projectionType == projectionType.rawValue }) else {
             return nil
         }
-        let runsPoints = Double(playerStats.r) * scoringSettings.r
-        let rbiPoints = Double(playerStats.rbi) * scoringSettings.rbi
-        let totalBasesPoints = Double(playerStats.tb) * scoringSettings.tb
-        let stolenBasesPoints = Double(playerStats.sb) * scoringSettings.sb
-        let walksPoints = Double(playerStats.bb) * scoringSettings.bb
-        let caughtStealingPoints = Double(playerStats.cs) * scoringSettings.cs
-        let strikeoutsPoints = Double(playerStats.so) * scoringSettings.batterK
+        let runsPoints = Float(playerStats.r) * scoringSettings.r
+        let rbiPoints = Float(playerStats.rbi) * scoringSettings.rbi
+        let totalBasesPoints = Float(playerStats.tb) * scoringSettings.tb
+        let stolenBasesPoints = Float(playerStats.sb) * scoringSettings.sb
+        let walksPoints = Float(playerStats.bb) * scoringSettings.bb
+        let caughtStealingPoints = Float(playerStats.cs) * scoringSettings.cs
+        let strikeoutsPoints = Float(playerStats.so) * scoringSettings.batterK
         
         let fantasyPoints = runsPoints + rbiPoints + totalBasesPoints + stolenBasesPoints + walksPoints + caughtStealingPoints + strikeoutsPoints
         
@@ -307,8 +307,8 @@ extension PlayerEntity {
     /// - projectionType: The projection type for which the function will calculate fantasy points.
     /// - context: The managed object context to be used to retrieve the player's statistics and save the calculated points.
     ///
-    /// - Returns: An optional Double value representing the total fantasy points for the player for the given projection type, or nil if no statistics exist for the player.
-    func calculatedPoints(for projectionType: ProjectionType, in context: NSManagedObjectContext) -> Double? {
+    /// - Returns: An optional Float value representing the total fantasy points for the player for the given projection type, or nil if no statistics exist for the player.
+    func calculatedPoints(for projectionType: ProjectionType, in context: NSManagedObjectContext) -> Float? {
         guard let playerStats = stats?.allObjects as? [PlayerStatsEntity] else {
             return nil
         }
