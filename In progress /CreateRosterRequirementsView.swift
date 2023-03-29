@@ -13,17 +13,14 @@ import SwiftUI
 struct CreateRosterRequirementsView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
-    
     @State private var min1B: Int16 = 1
     @State private var min2B: Int16 = 1
     @State private var min3B: Int16 = 1
-    
+
     @State private var minSS: Int16 = 1
     @State private var minOF: Int16 = 3
     @State private var minRP: Int16 = 5
     @State private var minSP: Int16 = 5
-    
-    
 
     let draftSettings: DraftSettings
 
@@ -35,11 +32,11 @@ struct CreateRosterRequirementsView: View {
         let sum = min1B + min2B + min3B + minOF + minRP + minSP + minSS
         return sum
     }
+
     private var isSumGreaterThanPlayersPerTeam: Bool {
         return sum > playersPerTeam
     }
-    
-    
+
     private func resetToDefaults() {
         min1B = 1
         min2B = 1
@@ -50,13 +47,12 @@ struct CreateRosterRequirementsView: View {
         minSS = 1
     }
 
-
     var body: some View {
         Form {
             Section("Max players per team") {
                 Text(playersPerTeam.str)
             }
-            
+
             Section("Current Num of players") {
                 Text("\(sum)")
             }
@@ -90,37 +86,43 @@ struct CreateRosterRequirementsView: View {
                 }
             }
 
-            
             Section {
                 Button("Reset Default") {
                     resetToDefaults()
                 }
             }
 
-            Button(action: createRosterRequirements) {
+            NavigationLink {
+                DraftView(draft: createDraft())
+
+            } label: {
                 Text("Create")
             }
         }
-        .navigationTitle("New Roster Requirements")
+        .navigationTitle("Roster Requirements")
     }
 
-    private func createRosterRequirements() {
-        withAnimation {
-            let newRosterRequirements = RosterRequirements(context: viewContext)
-            newRosterRequirements.min1B = min1B
-            newRosterRequirements.min2B = min2B
-            newRosterRequirements.min3B = min3B
-            newRosterRequirements.minOF = minOF
-            newRosterRequirements.minRP = minRP
-            newRosterRequirements.minSP = minSP
-            newRosterRequirements.minSS = minSS
+    private func createDraft() -> Draft {
+        //        withAnimation {
+        let newRosterRequirements = RosterRequirements(context: viewContext)
+        newRosterRequirements.min1B = min1B
+        newRosterRequirements.min2B = min2B
+        newRosterRequirements.min3B = min3B
+        newRosterRequirements.minOF = minOF
+        newRosterRequirements.minRP = minRP
+        newRosterRequirements.minSP = minSP
+        newRosterRequirements.minSS = minSS
+        draftSettings.rosterRequirements = newRosterRequirements
 
-            do {
-                try viewContext.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Error saving new RosterRequirements object: \(nsError)")
-            }
+        let draft = Draft(context: viewContext)
+        draft.settings = draftSettings
+
+        do {
+            try viewContext.save()
+            return draft
+        } catch {
+            let nsError = error as NSError
+            fatalError("Error saving new RosterRequirements object: \(nsError)")
         }
     }
 
@@ -136,109 +138,91 @@ struct CreateRosterRequirementsView: View {
 }
 
 extension CreateRosterRequirementsView {
-    
-    
     // Custom bindings
-    
+
     private var min1BBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.min1B },
-            set: { newValue in
-                let newSum = sum - min1B + newValue
-                if newSum <= playersPerTeam {
-                    min1B = newValue
-                } else {
-                    print("Cannot set value of min1B to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.min1B },
+                       set: { newValue in
+                           let newSum = sum - min1B + newValue
+                           if newSum <= playersPerTeam {
+                               min1B = newValue
+                           } else {
+                               print("Cannot set value of min1B to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
-    
-    
+
     private var min2BBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.min2B },
-            set: { newValue in
-                let newSum = sum - min2B + newValue
-                if newSum <= playersPerTeam {
-                    min2B = newValue
-                } else {
-                    print("Cannot set value of min2B to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.min2B },
+                       set: { newValue in
+                           let newSum = sum - min2B + newValue
+                           if newSum <= playersPerTeam {
+                               min2B = newValue
+                           } else {
+                               print("Cannot set value of min2B to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
 
     private var min3BBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.min3B },
-            set: { newValue in
-                let newSum = sum - min3B + newValue
-                if newSum <= playersPerTeam {
-                    min3B = newValue
-                } else {
-                    print("Cannot set value of min3B to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.min3B },
+                       set: { newValue in
+                           let newSum = sum - min3B + newValue
+                           if newSum <= playersPerTeam {
+                               min3B = newValue
+                           } else {
+                               print("Cannot set value of min3B to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
 
     private var minOFBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.minOF },
-            set: { newValue in
-                let newSum = sum - minOF + newValue
-                if newSum <= playersPerTeam {
-                    minOF = newValue
-                } else {
-                    print("Cannot set value of minOF to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.minOF },
+                       set: { newValue in
+                           let newSum = sum - minOF + newValue
+                           if newSum <= playersPerTeam {
+                               minOF = newValue
+                           } else {
+                               print("Cannot set value of minOF to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
 
     private var minRPBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.minRP },
-            set: { newValue in
-                let newSum = sum - minRP + newValue
-                if newSum <= playersPerTeam {
-                    minRP = newValue
-                } else {
-                    print("Cannot set value of minRP to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.minRP },
+                       set: { newValue in
+                           let newSum = sum - minRP + newValue
+                           if newSum <= playersPerTeam {
+                               minRP = newValue
+                           } else {
+                               print("Cannot set value of minRP to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
 
     private var minSPBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.minSP },
-            set: { newValue in
-                let newSum = sum - minSP + newValue
-                if newSum <= playersPerTeam {
-                    minSP = newValue
-                } else {
-                    print("Cannot set value of minSP to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.minSP },
+                       set: { newValue in
+                           let newSum = sum - minSP + newValue
+                           if newSum <= playersPerTeam {
+                               minSP = newValue
+                           } else {
+                               print("Cannot set value of minSP to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
 
     private var minSSBinding: Binding<Int16> {
-        Binding<Int16>(
-            get: { self.minSS },
-            set: { newValue in
-                let newSum = sum - minSS + newValue
-                if newSum <= playersPerTeam {
-                    minSS = newValue
-                } else {
-                    print("Cannot set value of minSS to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
-                }
-            }
-        )
+        Binding<Int16>(get: { self.minSS },
+                       set: { newValue in
+                           let newSum = sum - minSS + newValue
+                           if newSum <= playersPerTeam {
+                               minSS = newValue
+                           } else {
+                               print("Cannot set value of minSS to \(newValue) because it would make the sum of the minimums greater than playersPerTeam")
+                           }
+                       })
     }
-
 }
 
 // MARK: - CreateRosterRequirementsView_Previews
@@ -248,7 +232,8 @@ struct CreateRosterRequirementsView_Previews: PreviewProvider {
         let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         let viewContext = PersistenceController.preview.container.viewContext
         let newRosterRequirements = RosterRequirements(context: viewContext)
-        return CreateRosterRequirementsView(draftSettings: .generateDefault(context: viewContext))
+        return NavigationView { CreateRosterRequirementsView(draftSettings: .generateDefault(context: viewContext))
             .environment(\.managedObjectContext, viewContext)
+        }
     }
 }
