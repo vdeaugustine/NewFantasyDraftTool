@@ -49,25 +49,7 @@ struct EditDraftTeamsView: View {
     }
 }
 
-private extension Draft {
-    var teamsArray: [DraftTeam] {
-        if let teams = teams {
-            return Array(teams) as? [DraftTeam] ?? []
-        } else {
-            return []
-        }
-    }
 
-    var sortedTeamsArray: [DraftTeam] {
-        return teamsArray.sorted(by: { team1, team2 -> Bool in
-            if team1.draftPosition == team2.draftPosition {
-                return team1.name ?? "" < team2.name ?? ""
-            } else {
-                return team1.draftPosition < team2.draftPosition
-            }
-        })
-    }
-}
 
 // MARK: - EditDraftTeamsView_Previews
 
